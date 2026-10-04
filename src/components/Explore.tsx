@@ -8,7 +8,7 @@ import { type GameKey, loadTask, type TaskData, taskInfo } from '../lib/tasks';
 import { C, Card, Legend, LineChart } from './charts';
 import { GROUP_COLOR, groupName, MapPlot, MODEL_KIND_COLOR, RankBars, StripPlot } from './Plots';
 
-const pct = (v: number | null | undefined) => (v == null || !Number.isFinite(v) ? '—' : `${Math.round(v * 100)}%`);
+const pct = (v: number | null | undefined) => (v == null || !Number.isFinite(v) ? '–' : `${Math.round(v * 100)}%`);
 const KIND_TEXT: Record<string, string> = { simple: 'simple model', deep: 'deep learning', classic: 'classic MSA', sota: 'state of the art', msa: 'deep MSA', plm: 'protein language model', structure: 'structure-aware', window: 'ESM2 · same window', full: 'ESM2 · whole protein' };
 
 export function Explore({ game, counts }: { game: GameKey; counts: Record<string, number | null> }) {
@@ -45,7 +45,7 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
         <div className="kpi"><div className="kpi-label">Contributors</div><div className="kpi-value">{ex.nPeople}</div><div className="kpi-sub">{ex.nTrials.toLocaleString()} answers</div></div>
         <div className="kpi"><div className="kpi-label">Typical human</div><div className="kpi-value">{pct(med)}</div><div className="kpi-sub">median accuracy</div></div>
         <div className="kpi"><div className="kpi-label">Best AI on the same items</div><div className="kpi-value">{pct(best?.acc)}</div><div className="kpi-sub">{best?.label}</div></div>
-        <div className="kpi you"><div className="kpi-label">You</div><div className="kpi-value">{ex.you ? pct(ex.you.acc) : '—'}</div><div className="kpi-sub">{ex.you ? (ex.you.group != null ? `reasons like ${groupName(ex.you.group)}` : 'your latest session') : <a href={info.url}>play to see where you land</a>}</div></div>
+        <div className="kpi you"><div className="kpi-label">You</div><div className="kpi-value">{ex.you ? pct(ex.you.acc) : '–'}</div><div className="kpi-sub">{ex.you ? (ex.you.group != null ? `reasons like ${groupName(ex.you.group)}` : 'your latest session') : <a href={info.url}>play to see where you land</a>}</div></div>
       </div>
 
       <Card title="How people and AI stack up" svgRef={refs.strip} exportName={`${game}_stack_up`}

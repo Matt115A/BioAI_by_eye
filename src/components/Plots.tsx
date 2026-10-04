@@ -108,7 +108,7 @@ export function RankBars({ rows, svgRef, format = (v) => v.toFixed(2), refLine }
             <g key={r.label + i}>
               <text x={labelW - 8} y={y + rowH / 2} dy="0.35em" textAnchor="end" fill={r.bold ? C.text : C.text2} fontSize={12.5} fontWeight={r.bold ? 700 : 400}>{r.label}</text>
               <rect x={Math.min(X(0), X(v))} y={y + 5} width={Math.abs(X(v) - X(0))} height={rowH - 10} rx={3} fill={r.color} />
-              <text x={Math.max(X(0), X(v)) + 6} y={y + rowH / 2} dy="0.35em" fill={C.text} fontSize={12}>{Number.isFinite(r.value) ? format(r.value) : '—'}</text>
+              <text x={Math.max(X(0), X(v)) + 6} y={y + rowH / 2} dy="0.35em" fill={C.text} fontSize={12}>{Number.isFinite(r.value) ? format(r.value) : '–'}</text>
             </g>
           );
         })}

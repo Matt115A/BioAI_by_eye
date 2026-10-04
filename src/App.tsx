@@ -6,7 +6,7 @@ import { localSessions } from './lib/submission';
 import { type GameKey, TASKS } from './lib/tasks';
 
 const GAMES = [
-  { key: 'nanopore', title: 'Reading DNA by eye', url: `${SITE}/Nanopore_by_eye/`, ai: 'Dorado basecallers, a CNN and simple models', what: 'Read the base hidden in a raw nanopore current trace — real E. coli reads, including methylated DNA.', tasks: ['nanopore'] },
+  { key: 'nanopore', title: 'Reading DNA by eye', url: `${SITE}/Nanopore_by_eye/`, ai: 'Dorado basecallers, a CNN and simple models', what: 'Read the base hidden in a raw nanopore current trace: real E. coli reads, including methylated DNA.', tasks: ['nanopore'] },
   { key: 'mutations', title: 'Mutation effects by eye', url: `${SITE}/Mutations_by_eye/`, ai: 'ESM, EVE, SaProt, VenusREM and 11 more', what: 'Decide whether a real amino-acid change damages a protein, from evolution, chemistry and the 3D structure.', tasks: ['mutations'] },
   { key: 'protseq', title: 'Protein sequence by eye', url: `${SITE}/Protein_sequence_by_eye/`, ai: 'ESM2 (4 sizes) and ProteinMPNN', what: 'Fill in a hidden amino acid from sequence alone (like ESM2) or from the 3D structure (like ProteinMPNN). Two games.', tasks: ['seq', 'struct'] },
 ] as const;
@@ -24,9 +24,9 @@ export default function App() {
       <header className="hero">
         <div className="hero-kicker">BioAI by eye</div>
         <h1>Do people reason like biology's AI models?</h1>
-        <p className="hero-sub">Each game teaches you a task that a leading BioAI model was trained to do — read DNA from raw signal, judge mutations, fill in protein sequence —
-          then scores you against those models on exactly the same items. Share your results anonymously, and this page dissects the patterns of human logic: where
-          people find the same answers as the AI, where they diverge, and which groups of people reason alike.</p>
+        <p className="hero-sub">Each game teaches you a task that a leading BioAI model was trained to do (read DNA from raw signal, judge mutations, fill in protein sequence),
+          then scores you against those models on exactly the same items. Share your results anonymously, and this page dissects the patterns of human contributions: where
+          people find the same answers as the AI, where they diverge, and whether convergent patterns of human reasoning emerge.</p>
         <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">Explore the results</a></div>
       </header>
 

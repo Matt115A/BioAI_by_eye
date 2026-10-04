@@ -6,7 +6,7 @@ import { simulateContributors } from '../src/lib/mock';
 import { fromSession } from '../src/lib/submission';
 import { type GameKey, parseTask, taskInfo } from '../src/lib/tasks';
 
-const Y = `${process.env.HOME}/Cambridge/youtube`;
+const Y = process.env.BIOAI_GAMES_DIR ?? "../..";   // folder holding the game repos (nanopore/, proteins/, masked/)
 const raw: Record<GameKey, string> = { nanopore: `${Y}/nanopore/app/public/data/dataset.json`, mutations: `${Y}/proteins/app/public/data/dataset.json`, seq: `${Y}/masked/app/public/data/dataset.json`, struct: `${Y}/masked/app/public/data/dataset.json` };
 const tasks = Object.fromEntries((Object.keys(raw) as GameKey[]).map((k) => [k, parseTask(k, JSON.parse(readFileSync(raw[k], 'utf8')))])) as Record<GameKey, ReturnType<typeof parseTask>>;
 

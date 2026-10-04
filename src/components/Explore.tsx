@@ -49,7 +49,7 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
       </div>
 
       <Card title="How people and AI stack up" svgRef={refs.strip} exportName={`${game}_stack_up`}
-        sub={<>Each dot is one person's accuracy (all their answers), coloured by reasoning group. Diamonds are AI models, scored on exactly the same items as the people.{ex.you ? ' The star is you.' : ''}</>}>
+        sub={<>Each dot is one person's accuracy (all their answers), coloured by reasoning group. Diamonds are state of the art models, scored on exactly the same items as the people.{ex.you ? ' The star is you.' : ''}</>}>
         <Legend items={[...ex.groups.map((g) => ({ name: groupName(g.index), color: GROUP_COLOR[g.index] })), ...kinds.map((k) => ({ name: KIND_TEXT[k] ?? k, color: MODEL_KIND_COLOR[k] ?? C.text2, square: true }))]} />
         <StripPlot svgRef={refs.strip} domain={[lo, 1]} you={ex.you?.acc ?? null} people={ex.persons.map((p) => ({ acc: p.acc, group: p.group, mine: p.mine }))} models={ex.models.map((m) => ({ label: m.label, acc: m.acc, kind: m.kind }))} />
       </Card>

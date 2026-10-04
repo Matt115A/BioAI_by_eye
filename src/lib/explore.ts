@@ -27,10 +27,11 @@ export function explore(task: TaskData, info: TaskInfo, contributions: Submissio
   }
 
   // models, on exactly the items people answered: accuracy averaged person by person; a "profile" on the pooled items for the map
-  const modelAcc = task.models.map((_, m) => avg(people.map((p) => modelAccuracy(p, m))));
-  const modelTestAcc = task.models.map((_, m) => avg(people.map((p) => modelAccuracy(p, m, testMask(p, info)))));
+  const basis = people.length ? people : me ? [me] : [];
+  const modelAcc = task.models.map((_, m) => avg(basis.map((p) => modelAccuracy(p, m))));
+  const modelTestAcc = task.models.map((_, m) => avg(basis.map((p) => modelAccuracy(p, m, testMask(p, info)))));
   const pooled = new Map<number, true>();
-  for (const p of people) p.sub.items.forEach((id, i) => p.open[i] !== false && task.truth.has(id) && pooled.set(id, true));
+  for (const p of basis) p.sub.items.forEach((id, i) => p.open[i] !== false && task.truth.has(id) && pooled.set(id, true));
   const ids = [...pooled.keys()], truth = ids.map((id) => task.truth.get(id)!).join(''), calls = task.models.map((_, m) => ids.map((id) => task.calls.get(id)![m]).join(''));
   const models = task.models.map((mi, m) => {
     const raw = ids.length ? profileOf(calls[m], truth, calls, task) : [];

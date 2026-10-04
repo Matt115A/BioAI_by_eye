@@ -49,7 +49,7 @@ export default function App() {
           <h2>Explore: humans vs AI</h2>
           <div className="tabs">{TASKS.map((t) => <button key={t.key} className={`tab ${game === t.key ? 'active' : ''}`} onClick={() => setGame(t.key)}>{t.game}</button>)}</div>
         </div>
-        <p className="muted explore-q">{TASKS.find((t) => t.key === game)!.question}{local ? ` · ${local} of your own session${local === 1 ? '' : 's'} found in this browser` : ''}</p>
+        <p className="muted explore-q">{TASKS.find((t) => t.key === game)!.question}{local ? ` · ${local} of your session${local === 1 ? '' : 's'} found in this browser` : ''}</p>
         <Explore game={game} counts={counts} />
       </section>
 

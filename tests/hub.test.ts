@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { describe, expect, it } from 'vitest';
 import { clusterPeople, kappa, kmeans, prepare, profile, silhouette, standardize } from '../src/lib/analysis';
 import { explore } from '../src/lib/explore';
-import { simulateContributors } from '../src/lib/mock';
+import { simulateContributors } from './mock';
 import { fromSession } from '../src/lib/submission';
 import { type GameKey, parseTask, taskInfo } from '../src/lib/tasks';
 

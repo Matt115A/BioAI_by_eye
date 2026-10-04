@@ -15,7 +15,7 @@ Players can **contribute a session anonymously** from each game's results page. 
 - who people think like (κ with each model vs κ between people), and how fast people learn
 
 Your own sessions are read straight from this browser (all sites share the `matt115a.github.io` origin), whether or not you contribute.
-Until enough people contribute, the hub shows a clearly-labelled simulated preview.
+Groups of people who reason alike appear once a task has 8 contributors; until then the hub shows whatever real data exist.
 
 ## Privacy
 

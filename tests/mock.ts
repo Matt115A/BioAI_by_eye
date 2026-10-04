@@ -1,9 +1,9 @@
-import { makeRng } from './rng';
-import type { Submission } from './submission';
-import type { TaskData, TaskInfo } from './tasks';
+import { makeRng } from '../src/lib/rng';
+import type { Submission } from '../src/lib/submission';
+import type { TaskData, TaskInfo } from '../src/lib/tasks';
 
 /**
- * Simulated contributors for previewing the hub before real data exist — clearly labelled in the UI, never uploaded,
+ * Simulated contributors for tests only (not part of the site). Never uploaded,
  * never mixed with real contributions. Three made-up reasoning styles per task: each leans on a different model's logic
  * and has its own answer bias, and gets a bit better with practice.
  */

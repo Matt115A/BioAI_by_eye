@@ -3,7 +3,6 @@ import { fetchSubmissions } from '../lib/backend';
 import { BACKEND_READY } from '../lib/config';
 import { explore } from '../lib/explore';
 import { MIN_FOR_CLUSTERS } from '../lib/analysis';
-import { simulateContributors } from '../lib/mock';
 import { mySubmissions, type Submission } from '../lib/submission';
 import { type GameKey, loadTask, type TaskData, taskInfo } from '../lib/tasks';
 import { C, Card, Legend, LineChart } from './charts';
@@ -17,20 +16,16 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
   const [task, setTask] = useState<TaskData | null>(null);
   const [real, setReal] = useState<Submission[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [preview, setPreview] = useState<boolean | null>(null);
   useEffect(() => {
     let on = true;
-    setTask(null); setReal(null); setErr(null); setPreview(null);
+    setTask(null); setReal(null); setErr(null);
     Promise.all([loadTask(game), fetchSubmissions(game).catch((e) => { if (on) setErr(String(e)); return []; })])
       .then(([t, subs]) => { if (on) { setTask(t); setReal(subs.filter((s) => s.dataset_version === t.version)); } })
       .catch((e) => on && setErr(String(e)));
     return () => { on = false; };
   }, [game]);
   const mine = useMemo(() => mySubmissions(game), [game]);
-  const enoughReal = (real?.length ?? 0) >= MIN_FOR_CLUSTERS;
-  const showPreview = preview ?? !enoughReal;
-  const contributions = useMemo(() => (!task || !real ? null : showPreview ? simulateContributors(task, info) : real), [task, real, showPreview, info]);
-  const ex = useMemo(() => (task && contributions ? explore(task, info, contributions, mine) : null), [task, contributions, info, mine]);
+  const ex = useMemo(() => (task && real ? explore(task, info, real, mine) : null), [task, real, info, mine]);
   const refs = { strip: useRef<SVGSVGElement>(null), map: useRef<SVGSVGElement>(null), agree: useRef<SVGSVGElement>(null), curve: useRef<SVGSVGElement>(null) };
   if (err && !task) return <div className="card empty">Couldn't load this task: {err}</div>;
   if (!ex || !task) return <div className="card empty pulse">Loading {info.game.toLowerCase()} data…</div>;
@@ -41,10 +36,10 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
   const kinds = [...new Set(ex.models.map((m) => m.kind))];
   return (
     <div className="explore">
-      <div className={`data-banner ${showPreview ? 'sim' : ''}`}>
-        {showPreview
-          ? <><b>Simulated preview.</b> {BACKEND_READY ? `Only ${real?.length ?? 0} real contribution${real?.length === 1 ? '' : 's'} so far — ` : 'Contributions are not switched on yet — '}these dots are made-up players with three invented styles, to show what the analysis will look like. {enoughReal && <button className="link" onClick={() => setPreview(false)}>Show real data</button>}</>
-          : <><b>{real?.length} real contributors</b> · anonymous datapoints from people who chose to share. {<button className="link" onClick={() => setPreview(true)}>Show simulated preview</button>}</>}
+      <div className="data-banner">
+        {!BACKEND_READY ? <>Contributions aren't switched on.</>
+          : ex.nPeople === 0 ? <><b>No contributions yet for this task.</b> Be the first: <a href={info.url}>play {info.game.toLowerCase()}</a> and press <b>Contribute anonymously</b> on your results page.{ex.you ? ' Meanwhile, your own session is compared with the AI models below.' : ''}</>
+          : <><b>{ex.nPeople} {ex.nPeople === 1 ? 'person has' : 'people have'} contributed</b> · anonymous datapoints from people who chose to share.{ex.nPeople < MIN_FOR_CLUSTERS ? ` Groups of people who reason alike appear at ${MIN_FOR_CLUSTERS}.` : ''}</>}
       </div>
       <div className="kpis">
         <div className="kpi"><div className="kpi-label">Contributors</div><div className="kpi-value">{ex.nPeople}</div><div className="kpi-sub">{ex.nTrials.toLocaleString()} answers</div></div>
@@ -79,19 +74,25 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
       </div>
 
       <div className="grid2">
-        <Card title="Who do people think like?" svgRef={refs.agree} exportName={`${game}_agreement`}
-          sub="Average agreement beyond chance (Cohen's κ) between people's answers and each model's, on the same items. The dashed line is how much people agree with each other.">
-          <RankBars svgRef={refs.agree} rows={ex.agreement.map((m) => ({ label: m.label, value: m.kappa, color: MODEL_KIND_COLOR[m.kind] ?? C.text2 }))}
-            refLine={Number.isFinite(ex.human.kappa) ? { value: ex.human.kappa, label: `human ↔ human κ ${ex.human.kappa.toFixed(2)}` } : undefined} />
-        </Card>
+        {ex.nPeople === 0 && ex.you ? (
+          <Card title="Who do you think like?" svgRef={refs.agree} exportName={`${game}_agreement_you`} sub="Agreement beyond chance (Cohen's κ) between your latest session's answers and each model's, on the same items. Once people contribute, this compares everyone.">
+            <RankBars svgRef={refs.agree} rows={task.models.map((m, k) => ({ label: m.label, value: ex.you!.profile[k], color: MODEL_KIND_COLOR[m.kind] ?? C.text2 })).sort((a, b) => b.value - a.value)} />
+          </Card>
+        ) : (
+          <Card title="Who do people think like?" svgRef={refs.agree} exportName={`${game}_agreement`}
+            sub="Average agreement beyond chance (Cohen's κ) between people's answers and each model's, on the same items. The dashed line is how much people agree with each other.">
+            {ex.nPeople ? <RankBars svgRef={refs.agree} rows={ex.agreement.map((m) => ({ label: m.label, value: m.kappa, color: MODEL_KIND_COLOR[m.kind] ?? C.text2 }))}
+              refLine={Number.isFinite(ex.human.kappa) ? { value: ex.human.kappa, label: `human ↔ human κ ${ex.human.kappa.toFixed(2)}` } : undefined} /> : <div className="empty">Appears once someone contributes.</div>}
+          </Card>
+        )}
         <Card title="How fast do people learn?" svgRef={refs.curve} exportName={`${game}_learning`} sub="Average accuracy in blocks of 20 answers, across everyone who got that far (band: middle half of people). Dashed: the best AI model on the same items.">
-          <LineChart svgRef={refs.curve} height={260} yDomain={[0, 1]} yFormat={(v) => `${Math.round(v * 100)}%`} xLabel="Answer number" yLabel="Accuracy"
+          {ex.curve.length < 2 ? <div className="empty">Appears once at least two people have contributed.</div> : <LineChart svgRef={refs.curve} height={260} yDomain={[0, 1]} yFormat={(v) => `${Math.round(v * 100)}%`} xLabel="Answer number" yLabel="Accuracy"
             refLines={best && Number.isFinite(best.acc) ? [{ y: best.acc, label: best.label, at: 'end' }] : []}
             series={[
               { name: 'upper quartile', color: '#5a5a54', points: ex.curve.map((p) => ({ x: p.x, y: p.hi })), dash: '2 3' },
               { name: 'lower quartile', color: '#5a5a54', points: ex.curve.map((p) => ({ x: p.x, y: p.lo })), dash: '2 3' },
               { name: 'Average person', color: C.text, points: ex.curve.map((p) => ({ x: p.x, y: p.y })), width: 2.5, dots: true },
-            ]} />
+            ]} />}
         </Card>
       </div>
       <p className="note">{counts[game] != null ? `${counts[game]} contributions stored for this task.` : ''} Profiles use only the trials where every answer was allowed. Data version {task.version}.</p>

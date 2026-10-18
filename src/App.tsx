@@ -30,9 +30,9 @@ const GAMES: { key: string; title: string; url: string; tasks: GameKey[]; what: 
   },
   {
     key: 'mutations', title: 'Mutation effects by eye', url: `${SITE}/Mutations_by_eye/`, tasks: ['mutations'],
-    what: { learner: 'Change one amino acid and a protein might keep working, or break. AI can predict which without running an experiment. Learn the clues, then make the call.',
+    what: { learner: 'Change one amino acid and a protein might keep working, or break. AI can predict which without running an experiment, but even the best AI can make mistakes! Learn the clues, then make the call.',
       expert: 'Damaging or tolerated? Single substitutions from 10 ProteinGym deep mutational scans, judged from the MSA, the AlphaFold2 structure and residue chemistry.' },
-    ai: { learner: '15 models, from a simple lookup table to the best AI today', expert: '15 zero-shot predictors, from BLOSUM62 and EVE to ESM-1v, SaProt, ProSST, S3F and VenusREM' },
+    ai: { learner: '15 models, from a simple lookup table to the best AI today', expert: '11 zero-shot predictors (EVmutation and EVE to ESM-1v, SaProt, ProSST, S3F and VenusREM) and 4 baselines' },
   },
   {
     key: 'protseq', title: 'Protein sequence by eye', url: `${SITE}/Protein_sequence_by_eye/`, tasks: ['seq', 'struct'],

@@ -69,3 +69,14 @@ describe('sessions → submissions', () => {
     expect(ex.you!.group).not.toBeNull();
   });
 });
+
+describe('model descriptions', () => {
+  it('every model shown on the hub has a one-sentence description at both levels and a citation, with no em-dashes', async () => {
+    const { MODEL_INFO } = await import('../src/lib/models');
+    for (const t of Object.values(tasks)) for (const m of t.models) {
+      const b = MODEL_INFO[m.name];
+      expect(b, m.name).toBeTruthy();
+      for (const s of [b.learner, b.expert, b.cite]) { expect(s.length).toBeGreaterThan(3); expect(s).not.toContain('—'); }
+    }
+  });
+});

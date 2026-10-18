@@ -5,7 +5,7 @@ import { type Level, useLevel } from '../lib/level';
 import { explore } from '../lib/explore';
 import { MIN_FOR_CLUSTERS } from '../lib/analysis';
 import { mySubmissions, type Submission } from '../lib/submission';
-import { type GameKey, loadTask, type TaskData, taskInfo } from '../lib/tasks';
+import { type GameKey, loadTask, STRUCT_CREDIT, type TaskData, taskInfo } from '../lib/tasks';
 import { C, Card, Legend, LineChart } from './charts';
 import { GROUP_COLOR, groupName, MapPlot, MODEL_KIND_COLOR, ModelTip, RankBars, StripPlot } from './Plots';
 
@@ -18,6 +18,9 @@ const KIND_TEXT: Record<Level, Record<string, string>> = {
 export function Explore({ game, counts }: { game: GameKey; counts: Record<string, number | null> }) {
   const info = taskInfo(game);
   const level = useLevel(), L = level === 'learner';
+  const scored = game === 'struct';   // partial credit for the right amino-acid family
+  const scoreNote = !scored ? null : L ? ' Scores give 1 point for the exact amino acid and partial credit for the right family (more for rarer families), for people and AI alike.'
+    : ` Score = 1 for an exact match; same family earns ${Object.entries(STRUCT_CREDIT).map(([f, c]) => `${f} ${c}`).join(', ')} (inverse to family frequency). Models are scored on their top-1 call by the same rule.`;
   const [task, setTask] = useState<TaskData | null>(null);
   const [real, setReal] = useState<Submission[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -48,13 +51,13 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
       </div>
       <div className="kpis">
         <div className="kpi"><div className="kpi-label">Contributors</div><div className="kpi-value">{ex.nPeople}</div><div className="kpi-sub">{ex.nTrials.toLocaleString()} answers</div></div>
-        <div className="kpi"><div className="kpi-label">Typical human</div><div className="kpi-value">{pct(med)}</div><div className="kpi-sub">median accuracy</div></div>
+        <div className="kpi"><div className="kpi-label">Typical human</div><div className="kpi-value">{pct(med)}</div><div className="kpi-sub">median {scored ? 'score' : 'accuracy'}</div></div>
         <div className="kpi"><div className="kpi-label">Best AI on the same items</div><div className="kpi-value">{pct(best?.acc)}</div><div className="kpi-sub">{best?.label}</div></div>
         <div className="kpi you"><div className="kpi-label">You</div><div className="kpi-value">{ex.you ? pct(ex.you.acc) : '–'}</div><div className="kpi-sub">{ex.you ? (ex.you.group != null ? `reasons like ${groupName(ex.you.group)}` : 'your latest session') : <a href={info.url}>play to see where you land</a>}</div></div>
       </div>
 
       <Card title="How people and AI stack up" svgRef={refs.strip} exportName={`${game}_stack_up`}
-        sub={<>{L ? 'Each dot is one person\'s score. Diamonds are AI models, tested on exactly the same puzzles.' : 'Each dot is one contributor\'s accuracy over all answers, coloured by reasoning group. Diamonds are models scored on the identical items, averaged person by person.'}{ex.you ? ' The star is you.' : ''} {L ? 'Hover over a point to see who or what it is.' : 'Hover for details and citations.'}</>}>
+        sub={<>{L ? 'Each dot is one person\'s score. Diamonds are AI models, tested on exactly the same puzzles.' : 'Each dot is one contributor\'s accuracy over all answers, coloured by reasoning group. Diamonds are models scored on the identical items, averaged person by person.'}{ex.you ? ' The star is you.' : ''}{scoreNote} {L ? 'Hover over a point to see who or what it is.' : 'Hover for details and citations.'}</>}>
         <Legend items={[...ex.groups.map((g) => ({ name: groupName(g.index), color: GROUP_COLOR[g.index] })), ...kinds.map((k) => ({ name: KIND_TEXT[level][k] ?? k, color: MODEL_KIND_COLOR[k] ?? C.text2, square: true }))]} />
         <StripPlot svgRef={refs.strip} domain={[lo, 1]} you={ex.you?.acc ?? null} people={ex.persons.map((p) => ({ acc: p.acc, group: p.group, mine: p.mine }))} models={ex.models.map((m) => ({ name: m.name, label: m.label, acc: m.acc, kind: m.kind }))} />
       </Card>
@@ -94,7 +97,7 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
           </Card>
         )}
         <Card title="How fast do people learn?" svgRef={refs.curve} exportName={`${game}_learning`} sub={L ? 'Average score in blocks of 20 answers. Dotted lines mark the middle half of people; the dashed line is the best AI.' : 'Mean accuracy in bins of 20 trials across contributors reaching each bin; dotted: interquartile range. Dashed: best model on the same items.'}>
-          {ex.curve.length < 2 ? <div className="empty">Appears once at least two people have contributed.</div> : <LineChart svgRef={refs.curve} height={260} yDomain={[0, 1]} yFormat={(v) => `${Math.round(v * 100)}%`} xLabel="Answer number" yLabel="Accuracy"
+          {ex.curve.length < 2 ? <div className="empty">Appears once at least two people have contributed.</div> : <LineChart svgRef={refs.curve} height={260} yDomain={[0, 1]} yFormat={(v) => `${Math.round(v * 100)}%`} xLabel="Answer number" yLabel={scored ? 'Score' : 'Accuracy'}
             refLines={best && Number.isFinite(best.acc) ? [{ y: best.acc, label: best.label, at: 'end' }] : []}
             series={[
               { name: 'upper quartile', color: '#5a5a54', points: ex.curve.map((p) => ({ x: p.x, y: p.hi })), dash: '2 3' },

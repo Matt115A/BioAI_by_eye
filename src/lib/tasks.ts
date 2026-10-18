@@ -16,6 +16,8 @@ export interface TaskData {
   truth: Map<number, string>;
   /** item → one call character per model (same order as models) */
   calls: Map<number, string>;
+  /** points for one answer: 1 if exact; partial family credit in the structure game */
+  score: (resp: string, truth: string) => number;
 }
 
 export interface TaskInfo {
@@ -35,6 +37,12 @@ export interface TaskInfo {
   responseName: (c: string) => string;
 }
 
+const exact = (r: string, t: string) => (r === t ? 1 : 0);
+/**
+ * Structure game (Protein sequence by eye): the right family earns partial credit, inversely proportional to the family's
+ * share of the game's sites (rarest family = 0.5), so blind picks from any family are worth the same. Must match the game.
+ */
+export const STRUCT_CREDIT: Record<string, number> = { hydrophobic: 0.13, polar: 0.22, positive: 0.29, special: 0.31, negative: 0.34, aromatic: 0.5 };
 const AA_FAMILIES = [
   { label: 'hydrophobic', members: 'AVLIM' }, { label: 'aromatic', members: 'FWY' }, { label: 'polar', members: 'STNQ' },
   { label: 'positive', members: 'KRH' }, { label: 'negative', members: 'DE' }, { label: 'special', members: 'GPC' },
@@ -67,20 +75,22 @@ export function parseTask(key: GameKey, raw: any): TaskData {
     const models = pick(order);
     const truth = new Map<number, string>(), calls = new Map<number, string>();
     for (const w of raw.windows) { truth.set(w.id, w.l); calls.set(w.id, w.p); }
-    return { key, version: raw.version, alphabet: 'ACGT', families: [...'ACGT'].map((b) => ({ label: b, members: b })), models, truth, calls };
+    return { key, version: raw.version, alphabet: 'ACGT', families: [...'ACGT'].map((b) => ({ label: b, members: b })), models, truth, calls, score: exact };
   }
   if (key === 'mutations') {
     const models = pick(order);
     const truth = new Map<number, string>(), calls = new Map<number, string>();
     for (const v of raw.variants) { truth.set(v.id, String(v.y)); calls.set(v.id, v.c); }
-    return { key, version: raw.version, alphabet: '01', families: [{ label: 'damaging', members: '0' }], models, truth, calls };
+    return { key, version: raw.version, alphabet: '01', families: [{ label: 'damaging', members: '0' }], models, truth, calls, score: exact };
   }
   // seq / struct share a dataset; keep the models that are a fair or reference comparison in that game
   const keep = modelsRaw.filter((m) => (m.games ?? []).includes(key)).map((m) => m.name);
   const idx = keep.map((n) => order.indexOf(n));
   const truth = new Map<number, string>(), calls = new Map<number, string>();
   for (const s of raw.sites) { truth.set(s.id, s.aa); calls.set(s.id, idx.map((i) => s.c[i]).join('')); }
-  return { key, version: raw.version, alphabet: 'ACDEFGHIKLMNPQRSTVWY', families: AA_FAMILIES, models: pick(keep), truth, calls };
+  const famOf = (a: string) => AA_FAMILIES.find((f) => f.members.includes(a))?.label;
+  const score = key === 'struct' ? (r: string, t: string) => (r === t ? 1 : famOf(r) === famOf(t) ? STRUCT_CREDIT[famOf(t)!] ?? 0 : 0) : exact;
+  return { key, version: raw.version, alphabet: 'ACDEFGHIKLMNPQRSTVWY', families: AA_FAMILIES, models: pick(keep), truth, calls, score };
 }
 
 const cache = new Map<string, Promise<any>>();

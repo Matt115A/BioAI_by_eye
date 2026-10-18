@@ -80,3 +80,16 @@ describe('model descriptions', () => {
     }
   });
 });
+
+describe('structure game scoring', () => {
+  it('matches the game: same family credits, exact = 1', async () => {
+    const game = await import(`${(await import("path")).resolve(Y)}/masked/app/src/lib/types`);
+    const { STRUCT_CREDIT } = await import('../src/lib/tasks');
+    expect(STRUCT_CREDIT).toEqual(game.FAMILY_CREDIT);
+    const t = tasks.struct;
+    expect(t.score('L', 'L')).toBe(1);
+    expect(t.score('I', 'L')).toBe(game.points('struct', 'I', 'L'));
+    expect(t.score('W', 'F')).toBe(0.5);
+    expect(tasks.seq.score('I', 'L')).toBe(0);
+  });
+});

@@ -27,6 +27,10 @@ export interface Prepared {
   phase: string[];
   open: boolean[];
   correct: boolean[];
+  /** per-item score (1/0, or partial family credit in the structure game) */
+  score: number[];
+  /** the task's scoring rule, for scoring model calls the same way */
+  pts: (resp: string, truth: string) => number;
 }
 
 export function prepare(sub: Submission, task: TaskData, info: TaskInfo): Prepared | null {
@@ -37,15 +41,16 @@ export function prepare(sub: Submission, task: TaskData, info: TaskInfo): Prepar
   const resp = keep.map((i) => sub.responses[i]).join('');
   const calls = task.models.map((_, m) => keep.map((i) => task.calls.get(sub.items[i])![m]).join(''));
   const phase = keep.map((i) => info.phases[Number(sub.phases[i])] ?? 'other');
-  return { sub, resp, truth, calls, phase, open: phase.map((p) => info.openPhases.includes(p)), correct: [...resp].map((c, i) => c === truth[i]) };
+  return { sub, resp, truth, calls, phase, open: phase.map((p) => info.openPhases.includes(p)), correct: [...resp].map((c, i) => c === truth[i]), score: [...resp].map((c, i) => task.score(c, truth[i])), pts: task.score };
 }
 
 const pick = (s: string, mask: boolean[]) => [...s].filter((_, i) => mask[i]).join('');
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN);
-export const accuracy = (p: Prepared, mask?: boolean[]) => { const c = p.correct.filter((_, i) => !mask || mask[i]); return c.length ? c.filter(Boolean).length / c.length : NaN; };
+/** Mean score: accuracy, except in the structure game where the right family earns partial credit (as in the game). */
+export const accuracy = (p: Prepared, mask?: boolean[]) => mean(p.score.filter((_, i) => !mask || mask[i]));
 export function modelAccuracy(p: Prepared, m: number, mask?: boolean[]) {
   let k = 0, n = 0;
-  for (let i = 0; i < p.truth.length; i++) if (!mask || mask[i]) { n++; if (p.calls[m][i] === p.truth[i]) k++; }
+  for (let i = 0; i < p.truth.length; i++) if (!mask || mask[i]) { n++; k += p.pts(p.calls[m][i], p.truth[i]); }
   return n ? k / n : NaN;
 }
 export const testMask = (p: Prepared, info: TaskInfo) => p.phase.map((ph) => info.testPhases.includes(ph));
@@ -177,7 +182,7 @@ export function learningCurve(preps: Prepared[], bin = 20) {
   const maxN = Math.max(0, ...preps.map((p) => p.correct.length));
   const pts: (Pt & { n: number; lo: number; hi: number })[] = [];
   for (let s = 0; s < maxN; s += bin) {
-    const vals = preps.filter((p) => p.correct.length >= s + bin).map((p) => p.correct.slice(s, s + bin).filter(Boolean).length / bin);
+    const vals = preps.filter((p) => p.correct.length >= s + bin).map((p) => p.score.slice(s, s + bin).reduce((a, b) => a + b, 0) / bin);
     if (vals.length < 2) continue;
     const sorted = [...vals].sort((a, b) => a - b);
     pts.push({ x: s + bin / 2, y: mean(vals), n: vals.length, lo: sorted[Math.floor(0.25 * (sorted.length - 1))], hi: sorted[Math.ceil(0.75 * (sorted.length - 1))] });

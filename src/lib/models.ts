@@ -47,6 +47,9 @@ function esm2(suffix: string, learnerCtx: string, expertCtx: string): Record<str
   }]));
 }
 
+/** Models built for these games (baselines, small learners) rather than published AI models. */
+export const isCustom = (name: string) => MODEL_INFO[name]?.cite === GAME;
+
 export function modelBlurb(name: string, level: Level) {
   const b = MODEL_INFO[name];
   return b ? { text: b[level], cite: b.cite } : null;

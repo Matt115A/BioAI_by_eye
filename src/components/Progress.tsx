@@ -1,33 +1,15 @@
-import { useEffect, useState } from 'react';
-import { explore } from '../lib/explore';
 import { useLevel } from '../lib/level';
-import { mySubmissions } from '../lib/submission';
-import { type GameKey, loadTask, TASKS } from '../lib/tasks';
+import type { MyResult } from '../lib/mine';
+import { type GameKey, TASKS } from '../lib/tasks';
 
-interface Played { key: GameKey; acc: number; beat: number; of: number; best: string | null }
 const pct = (v: number) => `${Math.round(v * 100)}%`;
-const NAME: Record<GameKey, string> = { nanopore: 'Reading DNA', mutations: 'Mutation effects', seq: 'Sequence', struct: 'Structure' };
+export const NAME: Record<GameKey, string> = { nanopore: 'Reading DNA', mutations: 'Mutation effects', seq: 'Sequence', struct: 'Structure' };
 
 /** Your own sessions in this browser, across all four tasks: what you've played, how you did against the AI, and what to try next. */
-export function Progress({ played }: { played: GameKey[] }) {
+export function Progress({ played, results }: { played: GameKey[]; results: Partial<Record<GameKey, MyResult | null>> }) {
   const L = useLevel() === 'learner';
-  const [results, setResults] = useState<Record<string, Played | null>>({});
-  useEffect(() => {
-    let on = true;
-    for (const key of played) {
-      const info = TASKS.find((t) => t.key === key)!;
-      loadTask(key).then((task) => {
-        const ex = explore(task, info, [], mySubmissions(key));
-        if (!ex.you || !on) return;
-        const you = ex.you.acc, ms = ex.models.filter((m) => Number.isFinite(m.acc));
-        const beaten = ms.filter((m) => you > m.acc).sort((a, b) => b.acc - a.acc);
-        setResults((r) => ({ ...r, [key]: { key, acc: you, beat: beaten.length, of: ms.length, best: beaten[0]?.label ?? null } }));
-      }).catch(() => on && setResults((r) => ({ ...r, [key]: null })));
-    }
-    return () => { on = false; };
-  }, [played]);
   if (!played.length) return null;
-  const done = Object.values(results).filter((x): x is Played => !!x);
+  const done = Object.values(results).filter((x): x is MyResult => !!x);
   const top = done.slice().sort((a, b) => b.beat / b.of - a.beat / a.of || b.beat - a.beat)[0];
   const next = TASKS.find((t) => !played.includes(t.key));
   return (
@@ -38,7 +20,7 @@ export function Progress({ played }: { played: GameKey[] }) {
           <div className="progress-title">You've played {played.length} of {TASKS.length} games
             {top && <span className="muted"> · best: beat {top.beat} of {top.of} {L ? 'AI models' : 'models'} in {NAME[top.key]}</span>}</div>
         </div>
-        {next && <a className="btn btn-primary progress-next" href={next.url}>Try {NAME[next.key]} next →</a>}
+        <div className="progress-actions"><a className="btn progress-cert" href="#certificate">Get your certificate</a>{next && <a className="btn btn-primary progress-next" href={next.url}>Try {NAME[next.key]} next →</a>}</div>
       </div>
       <div className="progress-tasks">
         {TASKS.map((t) => {

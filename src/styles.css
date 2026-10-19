@@ -558,3 +558,16 @@ button.link { background: none; border: none; color: #f2c230; text-decoration: u
 .card.progress a.progress-task { color: var(--text-2); text-decoration: none; }
 .card.progress a.progress-task.played { color: var(--text); }
 .card.progress a.progress-next { color: #111; text-decoration: none; }
+.progress-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.card.progress a.progress-cert { color: var(--text); text-decoration: none; }
+
+/* ── certificate ── */
+.cert { margin-top: 30px; border-color: rgba(242, 194, 48, .4); }
+.cert-controls { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 14px; }
+.cert-tabs { flex-wrap: wrap; }
+.cert-name { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; min-width: 260px; font-size: 14px; }
+.cert-preview { border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); max-width: 900px; }
+.cert-preview svg { display: block; }
+.cert-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+.cert-msg { font-size: 13px; }
+@media (max-width: 760px) { .cert-name { min-width: 0; width: 100%; } }

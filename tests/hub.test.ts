@@ -93,3 +93,12 @@ describe('structure game scoring', () => {
     expect(tasks.seq.score('I', 'L')).toBe(0);
   });
 });
+
+describe('certificate', () => {
+  it('custom models (built for these games) are told apart from published AI models', async () => {
+    const { isCustom } = await import('../src/lib/models');
+    for (const n of ['level', 'knn', 'logreg', 'cnn', 'conservation', 'mut_frequency', 'feature_model', 'always', 'corpus_window', 'corpus_struct']) expect(isCustom(n), n).toBe(true);
+    for (const n of ['sup', 'blosum62', 'EVE_ensemble', 'VenusREM', 'esm650_f', 'mpnn']) expect(isCustom(n), n).toBe(false);
+    for (const t of Object.values(tasks)) expect(t.models.some((m) => !isCustom(m.name)), t.key).toBe(true);
+  });
+});

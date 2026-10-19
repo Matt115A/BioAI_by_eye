@@ -20,10 +20,10 @@ export function explore(task: TaskData, info: TaskInfo, contributions: Submissio
 
   const persons: Person[] = people.map((p, i) => ({ prep: p, acc: accuracy(p), testAcc: accuracy(p, testMask(p, info)), group: clusters ? clusters.labels[i] : null, mine: !!p.sub.mine, xy: pca ? pca.project(st!.Z[i]) : null }));
   const me = [...persons.filter((p) => p.mine).map((p) => p.prep), ...yours].at(-1) ?? null;
-  let you: { acc: number; testAcc: number; group: number | null; xy: { x: number; y: number } | null; contributed: boolean; profile: number[] } | null = null;
+  let you: { acc: number; testAcc: number; group: number | null; xy: { x: number; y: number } | null; contributed: boolean; profile: number[]; n: number } | null = null;
   if (me) {
     const raw = profile(me, task), z = st ? st.z(raw) : null;
-    you = { acc: accuracy(me), testAcc: accuracy(me, testMask(me, info)), group: clusters && z ? nearest(z, clusters.centroids) : null, xy: pca && z ? pca.project(z) : null, contributed: persons.some((p) => p.mine && p.prep === me), profile: raw };
+    you = { acc: accuracy(me), testAcc: accuracy(me, testMask(me, info)), group: clusters && z ? nearest(z, clusters.centroids) : null, xy: pca && z ? pca.project(z) : null, contributed: persons.some((p) => p.mine && p.prep === me), profile: raw, n: me.correct.length };
   }
 
   // models, on exactly the items people answered: accuracy averaged person by person; a "profile" on the pooled items for the map

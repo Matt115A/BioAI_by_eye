@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Explore } from './components/Explore';
+import { Certificate } from './components/Certificate';
 import { Progress } from './components/Progress';
+import { useMyResults } from './lib/mine';
 import { fetchSubmissions } from './lib/backend';
 import { BACKEND_READY, SITE } from './lib/config';
 import { initialLevel, type Level, LevelContext, saveLevel } from './lib/level';
@@ -51,6 +53,7 @@ export default function App() {
   const [local] = useState(() => localSessions().filter((s) => s?.trials?.length >= 20 && !s.meta?.simulated).length);
   /** the tasks you've played in this browser (sessions with at least 20 answers), in hub order */
   const [played] = useState<GameKey[]>(() => { const got = new Set(localSessions().map(fromSession).filter(Boolean).map((s) => s!.game)); return TASKS.map((t) => t.key).filter((k) => got.has(k)); });
+  const mine = useMyResults(played);
   useEffect(() => { const h = (e: Event) => setGame((e as CustomEvent<GameKey>).detail); window.addEventListener('bioai:tab', h); return () => window.removeEventListener('bioai:tab', h); }, []);
   useEffect(() => {
     if (!BACKEND_READY) return;
@@ -75,7 +78,7 @@ export default function App() {
           <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a></div>
         </header>
 
-        <Progress played={played} />
+        <Progress played={played} results={mine} />
 
         <section id="games" className="games">
           {GAMES.map((g, i) => {
@@ -103,6 +106,8 @@ export default function App() {
           <p className="muted explore-q">{TASKS.find((t) => t.key === game)!.question}{local ? ` · ${local} of your session${local === 1 ? '' : 's'} found in this browser` : ''}</p>
           <Explore game={game} counts={counts} playedAny={played.length > 0} />
         </section>
+
+        <Certificate played={played} results={mine} />
 
         <section className="privacy card">
           <h3 className="card-title">What "anonymous" means here</h3>

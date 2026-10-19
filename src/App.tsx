@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Explore } from './components/Explore';
+import { Progress } from './components/Progress';
 import { fetchSubmissions } from './lib/backend';
 import { BACKEND_READY, SITE } from './lib/config';
 import { initialLevel, type Level, LevelContext, saveLevel } from './lib/level';
-import { localSessions } from './lib/submission';
+import { fromSession, localSessions } from './lib/submission';
 import { type GameKey, TASKS } from './lib/tasks';
 
 type ByLevel = { learner: string; expert: string };
@@ -48,6 +49,9 @@ export default function App() {
   const [game, setGame] = useState<GameKey>('mutations');
   const [counts, setCounts] = useState<Record<string, number | null>>({});
   const [local] = useState(() => localSessions().filter((s) => s?.trials?.length >= 20 && !s.meta?.simulated).length);
+  /** the tasks you've played in this browser (sessions with at least 20 answers), in hub order */
+  const [played] = useState<GameKey[]>(() => { const got = new Set(localSessions().map(fromSession).filter(Boolean).map((s) => s!.game)); return TASKS.map((t) => t.key).filter((k) => got.has(k)); });
+  useEffect(() => { const h = (e: Event) => setGame((e as CustomEvent<GameKey>).detail); window.addEventListener('bioai:tab', h); return () => window.removeEventListener('bioai:tab', h); }, []);
   useEffect(() => {
     if (!BACKEND_READY) return;
     for (const t of TASKS) fetchSubmissions(t.key).then((s) => setCounts((c) => ({ ...c, [t.key]: s.length }))).catch(() => setCounts((c) => ({ ...c, [t.key]: null })));
@@ -70,6 +74,8 @@ export default function App() {
           <p className="hero-sub">{hero.sub}</p>
           <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a></div>
         </header>
+
+        <Progress played={played} />
 
         <section id="games" className="games">
           {GAMES.map((g, i) => {
@@ -95,7 +101,7 @@ export default function App() {
             <div className="tabs">{TASKS.map((t) => <button key={t.key} className={`tab ${game === t.key ? 'active' : ''}`} onClick={() => setGame(t.key)}>{t.game}</button>)}</div>
           </div>
           <p className="muted explore-q">{TASKS.find((t) => t.key === game)!.question}{local ? ` · ${local} of your session${local === 1 ? '' : 's'} found in this browser` : ''}</p>
-          <Explore game={game} counts={counts} />
+          <Explore game={game} counts={counts} playedAny={played.length > 0} />
         </section>
 
         <section className="privacy card">

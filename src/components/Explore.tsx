@@ -9,13 +9,14 @@ import { type GameKey, loadTask, STRUCT_CREDIT, type TaskData, taskInfo } from '
 import { C, Card, Legend, LineChart } from './charts';
 import { GROUP_COLOR, groupName, MapPlot, MODEL_KIND_COLOR, ModelTip, RankBars, StripPlot } from './Plots';
 
+const GAME_NAME: Record<GameKey, string> = { nanopore: 'Reading DNA by eye', mutations: 'Mutation effects by eye', seq: 'the Sequence game', struct: 'the Structure game' };
 const pct = (v: number | null | undefined) => (v == null || !Number.isFinite(v) ? '–' : `${Math.round(v * 100)}%`);
 const KIND_TEXT: Record<Level, Record<string, string>> = {
   learner: { simple: 'simple model', deep: 'neural network', classic: 'evolution-based model', sota: 'state-of-the-art AI', msa: 'deep evolution model', plm: 'protein language AI', structure: 'structure-aware AI', window: 'ESM2, same view as you', full: 'ESM2, whole protein' },
   expert: { simple: 'simple baseline', deep: 'deep learning', classic: 'classic MSA', sota: 'state of the art', msa: 'deep MSA', plm: 'protein language model', structure: 'structure-aware', window: 'ESM2 · window', full: 'ESM2 · full context' },
 };
 
-export function Explore({ game, counts }: { game: GameKey; counts: Record<string, number | null> }) {
+export function Explore({ game, counts, playedAny }: { game: GameKey; counts: Record<string, number | null>; playedAny: boolean }) {
   const info = taskInfo(game);
   const level = useLevel(), L = level === 'learner';
   const scored = game === 'struct';   // partial credit for the right amino-acid family
@@ -53,7 +54,7 @@ export function Explore({ game, counts }: { game: GameKey; counts: Record<string
         <div className="kpi"><div className="kpi-label">Contributors</div><div className="kpi-value">{ex.nPeople}</div><div className="kpi-sub">{ex.nTrials.toLocaleString()} answers</div></div>
         <div className="kpi"><div className="kpi-label">Typical human</div><div className="kpi-value">{pct(med)}</div><div className="kpi-sub">median {scored ? 'score' : 'accuracy'}</div></div>
         <div className="kpi"><div className="kpi-label">Best AI on the same items</div><div className="kpi-value">{pct(best?.acc)}</div><div className="kpi-sub">{best?.label}</div></div>
-        <div className="kpi you"><div className="kpi-label">You</div><div className="kpi-value">{ex.you ? pct(ex.you.acc) : '–'}</div><div className="kpi-sub">{ex.you ? (ex.you.group != null ? `reasons like ${groupName(ex.you.group)}` : 'your latest session') : <a href={info.url}>play to see where you land</a>}</div></div>
+        <div className="kpi you"><div className="kpi-label">You</div><div className="kpi-value">{ex.you ? pct(ex.you.acc) : '–'}</div><div className="kpi-sub">{ex.you ? (ex.you.group != null ? `reasons like ${groupName(ex.you.group)}` : 'your latest session') : (playedAny ? <>You haven't played {GAME_NAME[game]} yet. <a href={info.url}>Play it →</a></> : <a href="#games">Pick a game to see where you land →</a>)}</div></div>
       </div>
 
       <Card title="How people and AI stack up" svgRef={refs.strip} exportName={`${game}_stack_up`}

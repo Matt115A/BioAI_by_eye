@@ -534,3 +534,27 @@ button.link { background: none; border: none; color: #f2c230; text-decoration: u
 @media (max-width: 760px) { .hub { padding: 0 16px 40px; } .level-toggle button { padding: 5px 12px; font-size: 13px; } .hero-sub { font-size: 15px; } .explore-head h2 { font-size: 22px; } }
 .hero-cta .btn:not(.btn-primary) { color: var(--text); }
 @media (max-width: 760px) { .explore-head .tabs { width: 100%; overflow-x: auto; } .explore-head .tab { padding: 7px 10px; font-size: 13.5px; flex: 1; } }
+
+/* ── your progress (from sessions in this browser) ── */
+.progress { margin: 4px 0 22px; border-color: rgba(242, 194, 48, .4); }
+.progress-head { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+.progress-kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #f2c230; font-weight: 700; }
+.progress-title { font-size: 18px; font-weight: 650; margin-top: 3px; }
+.progress-title .muted { font-weight: 400; font-size: 15px; }
+.progress-next { text-decoration: none; }
+.progress-tasks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.progress-task { display: flex; flex-direction: column; gap: 4px; padding: 11px 13px; border: 1px dashed var(--border); border-radius: 12px; text-decoration: none; color: var(--text-2); transition: border-color .15s; }
+.progress-task:hover { border-color: #f2c230; }
+.progress-task.played { border-style: solid; background: var(--surface-2); color: var(--text); }
+.pt-name { font-weight: 650; font-size: 14.5px; }
+.progress-task.played .pt-name { color: #3ccf7e; }
+.pt-score { font-size: 24px; font-weight: 650; }
+.pt-bar { height: 5px; border-radius: 3px; background: #2c2c29; overflow: hidden; }
+.pt-bar span { display: block; height: 100%; background: #f2c230; }
+.pt-sub { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.pt-sub b { color: var(--text-2); font-weight: 600; }
+.progress-note { margin: 10px 0 0; font-size: 12px; }
+@media (max-width: 900px) { .progress-tasks { grid-template-columns: 1fr 1fr; } }
+.card.progress a.progress-task { color: var(--text-2); text-decoration: none; }
+.card.progress a.progress-task.played { color: var(--text); }
+.card.progress a.progress-next { color: #111; text-decoration: none; }

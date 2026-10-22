@@ -6,7 +6,7 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.submissions (
   id              bigint generated always as identity primary key,
-  game            text    not null check (game in ('nanopore', 'mutations', 'seq', 'struct')),
+  game            text    not null check (game in ('nanopore', 'mutations', 'seq', 'struct', 'binders')),
   app_version     text    not null check (length(app_version) <= 20),
   dataset_version text    not null check (length(dataset_version) <= 40),
   month           date    not null default date_trunc('month', now())::date,

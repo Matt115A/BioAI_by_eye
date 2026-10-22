@@ -1,10 +1,11 @@
 # BioAI by eye
 
-**Do people reason like biology's AI models?** A hub for three games that teach a task a leading BioAI model was trained to do, and score
+**Do people reason like biology's AI models?** A hub for four games that teach a task a leading BioAI model was trained to do, and score
 players against those models on identical items:
 
 - [Reading DNA by eye](https://matt115a.github.io/Nanopore_by_eye/): nanopore basecalling (vs Dorado, a CNN, simple models)
 - [Mutation effects by eye](https://matt115a.github.io/Mutations_by_eye/): ProteinGym variant effects (vs ESM, EVE, SaProt, VenusREM…)
+- [Binders by eye](https://matt115a.github.io/Binders_by_eye/): real or scrambled protein-protein interfaces (vs Boltz-2, ProteinMPNN, ESM2)
 - [Protein sequence by eye](https://matt115a.github.io/Protein_sequence_by_eye/): masked residues from sequence (vs ESM2) or structure (vs ProteinMPNN)
 
 Players can **contribute a session anonymously** from each game's results page. The hub then shows, per task:

@@ -1,6 +1,6 @@
 import { SITE } from './config';
 
-export type GameKey = 'nanopore' | 'mutations' | 'seq' | 'struct';
+export type GameKey = 'nanopore' | 'mutations' | 'seq' | 'struct' | 'binders';
 
 export interface ModelInfo { name: string; label: string; kind: string }
 
@@ -60,6 +60,10 @@ export const TASKS: TaskInfo[] = [
   { key: 'seq', title: 'Protein sequence by eye · sequence', game: 'Sequence', url: `${SITE}/Protein_sequence_by_eye/`, dataset: `${SITE}/Protein_sequence_by_eye/data/dataset.json`,
     question: 'Which amino acid is hidden in this 10-residue window? (like ESM2)', answer: 'amino acid',
     phases: ['learn', 'new'], openPhases: ['learn', 'new'], testPhases: ['new'], responseName: (c) => c },
+  { key: 'binders', title: 'Binders by eye', game: 'Binders', url: `${SITE}/Binders_by_eye/`, dataset: `${SITE}/Binders_by_eye/data/dataset.json`,
+    question: 'Do these two protein chains really bind, or has their interface been scrambled?', answer: 'call',
+    phases: ['learn', 'new'], openPhases: ['learn', 'new'], testPhases: ['new'],
+    responseName: (c) => (c === '0' ? 'fake' : 'real binders') },
   { key: 'struct', title: 'Protein sequence by eye · structure', game: 'Structure', url: `${SITE}/Protein_sequence_by_eye/`, dataset: `${SITE}/Protein_sequence_by_eye/data/dataset.json`,
     question: 'Which amino acid fits this spot in the 3D structure? (like ProteinMPNN)', answer: 'amino acid',
     phases: ['learn', 'new'], openPhases: ['learn', 'new'], testPhases: ['new'], responseName: (c) => c },
@@ -82,6 +86,12 @@ export function parseTask(key: GameKey, raw: any): TaskData {
     const truth = new Map<number, string>(), calls = new Map<number, string>();
     for (const v of raw.variants) { truth.set(v.id, String(v.y)); calls.set(v.id, v.c); }
     return { key, version: raw.version, alphabet: '01', families: [{ label: 'damaging', members: '0' }], models, truth, calls, score: exact };
+  }
+  if (key === 'binders') {
+    const models = pick(order);
+    const truth = new Map<number, string>(), calls = new Map<number, string>();
+    for (const it of raw.items) { truth.set(it.id, String(it.y)); calls.set(it.id, it.c); }
+    return { key, version: raw.version, alphabet: '01', families: [{ label: 'fake', members: '0' }], models, truth, calls, score: exact };
   }
   // seq / struct share a dataset; keep the models that are a fair or reference comparison in that game
   const keep = modelsRaw.filter((m) => (m.games ?? []).includes(key)).map((m) => m.name);

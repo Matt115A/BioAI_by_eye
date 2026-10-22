@@ -25,6 +25,7 @@ export function fromSession(s: any): Submission | null {
   let game: GameKey, item: (t: any) => number, resp: (t: any) => string;
   if (app.startsWith('nanopore') || s.trials[0]?.window_id !== undefined) { game = 'nanopore'; item = (t) => t.window_id; resp = (t) => t.pressed; }
   else if (s.trials[0]?.variant_id !== undefined) { game = 'mutations'; item = (t) => t.variant_id; resp = (t) => String(t.response); }
+  else if (s.trials[0]?.item_id !== undefined) { game = 'binders'; item = (t) => t.item_id; resp = (t) => String(t.response); }
   else if (s.trials[0]?.site_id !== undefined) { game = s.meta.config?.mode === 'struct' ? 'struct' : 'seq'; item = (t) => t.site_id; resp = (t) => t.response; }
   else return null;
   const phases = taskInfo(game).phases;
@@ -42,8 +43,8 @@ export function fromSession(s: any): Submission | null {
 export function localSessions(): any[] {
   const out: any[] = [];
   const read = (k: string) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } };
-  for (const k of ['prot.sessions', 'mask.sessions']) { const a = read(k); if (a && typeof a === 'object') out.push(...Object.values(a)); }
-  for (const k of ['nano.lastSession', 'prot.lastSession', 'mask.lastSession']) { const s = read(k); if (s && !out.some((o) => o?.meta?.session_id === s?.meta?.session_id)) out.push(s); }
+  for (const k of ['prot.sessions', 'mask.sessions', 'bind.sessions']) { const a = read(k); if (a && typeof a === 'object') out.push(...Object.values(a)); }
+  for (const k of ['nano.lastSession', 'prot.lastSession', 'mask.lastSession', 'bind.lastSession']) { const s = read(k); if (s && !out.some((o) => o?.meta?.session_id === s?.meta?.session_id)) out.push(s); }
   return out;
 }
 

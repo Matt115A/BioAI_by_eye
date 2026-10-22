@@ -4,8 +4,8 @@ import type { MyResult } from '../lib/mine';
 import { type GameKey, TASKS } from '../lib/tasks';
 
 const W = 1200, H = 630, Y = '#f2c230', FONT = "Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif";
-const TITLE: Record<GameKey, string> = { nanopore: 'Reading DNA by eye', mutations: 'Mutation effects by eye', seq: 'Protein sequence by eye · Sequence', struct: 'Protein sequence by eye · Structure' };
-const SHORT: Record<GameKey, string> = { nanopore: 'Reading DNA', mutations: 'Mutation effects', seq: 'Sequence', struct: 'Structure' };
+const TITLE: Record<GameKey, string> = { nanopore: 'Reading DNA by eye', mutations: 'Mutation effects by eye', seq: 'Protein sequence by eye · Sequence', struct: 'Protein sequence by eye · Structure', binders: 'Binders by eye' };
+const SHORT: Record<GameKey, string> = { nanopore: 'Reading DNA', mutations: 'Mutation effects', seq: 'Sequence', struct: 'Structure', binders: 'Binders' };
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const NAME_KEY = 'bioai.certName';
 const fit = (text: string, max: number, size: number) => Math.max(18, Math.min(size, (max / Math.max(1, text.length)) * 1.9));

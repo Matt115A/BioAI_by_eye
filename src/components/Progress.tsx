@@ -3,9 +3,9 @@ import type { MyResult } from '../lib/mine';
 import { type GameKey, TASKS } from '../lib/tasks';
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
-export const NAME: Record<GameKey, string> = { nanopore: 'Reading DNA', mutations: 'Mutation effects', seq: 'Sequence', struct: 'Structure' };
+export const NAME: Record<GameKey, string> = { nanopore: 'Reading DNA', mutations: 'Mutation effects', seq: 'Sequence', struct: 'Structure', binders: 'Binders' };
 
-/** Your own sessions in this browser, across all four tasks: what you've played, how you did against the AI, and what to try next. */
+/** Your own sessions in this browser, across all tasks: what you've played, how you did against the AI, and what to try next. */
 export function Progress({ played, results }: { played: GameKey[]; results: Partial<Record<GameKey, MyResult | null>> }) {
   const L = useLevel() === 'learner';
   if (!played.length) return null;

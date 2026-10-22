@@ -6,7 +6,7 @@ import { C, useWidth } from './charts';
 const FONT = "Inter, -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif";
 export const GROUP_COLOR = ['#f08a5d', '#5bc0be', '#b388eb', '#9ccc65', '#e57373'];
 export const groupName = (j: number) => `Group ${'ABCDE'[j]}`;
-export const MODEL_KIND_COLOR: Record<string, string> = { simple: '#9cc3e6', deep: '#199e70', classic: '#199e70', sota: '#3987e5', msa: '#c98500', plm: '#3987e5', structure: '#e87ba4', window: '#c98500', full: '#3987e5' };
+export const MODEL_KIND_COLOR: Record<string, string> = { simple: '#9cc3e6', deep: '#199e70', classic: '#199e70', sota: '#3987e5', msa: '#c98500', plm: '#3987e5', structure: '#e87ba4', window: '#c98500', full: '#3987e5', folding: '#3987e5' };
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 
 export function star(cx: number, cy: number, r: number, r2: number) {

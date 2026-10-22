@@ -9,7 +9,7 @@ export const BIOAI_SUPABASE_URL: string = import.meta.env.VITE_BIOAI_URL ?? '';
 export const BIOAI_SUPABASE_KEY: string = import.meta.env.VITE_BIOAI_KEY ?? '';
 export const BIOAI_READY = !!(BIOAI_SUPABASE_URL && BIOAI_SUPABASE_KEY);
 
-export interface Contribution { game: 'nanopore' | 'mutations' | 'seq' | 'struct'; app_version: string; dataset_version: string; n: number; items: number[]; responses: string; phases: string; rt: number[] }
+export interface Contribution { game: 'nanopore' | 'mutations' | 'seq' | 'struct' | 'binders'; app_version: string; dataset_version: string; n: number; items: number[]; responses: string; phases: string; rt: number[] }
 
 /** Build the upload from trials; null if too short. `phases` is the canonical phase list shared with the hub. */
 export function buildContribution(game: Contribution['game'], appVersion: string, datasetVersion: string, phases: string[],

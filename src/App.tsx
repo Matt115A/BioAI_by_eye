@@ -14,12 +14,12 @@ type ByLevel = { learner: string; expert: string };
 const HERO: Record<Level, { title: string; sub: string; cta: string }> = {
   learner: {
     title: 'What can AI in biology do?',
-    sub: 'AI models now read DNA as it streams through a sensor, predict which mutations will break a protein, and fill in missing pieces of proteins. Each game teaches you one of these jobs in a few minutes, then puts you head to head with the real AI on exactly the same puzzles. No biology background needed: everything you need is taught in the game.',
+    sub: 'AI models now read DNA as it streams through a sensor, predict which mutations will break a protein, fill in missing pieces of proteins, and work out which proteins stick to each other. Each game teaches you one of these jobs in a few minutes, then puts you head to head with the real AI on exactly the same puzzles. No biology background needed: everything you need is taught in the game.',
     cta: 'See how people compare',
   },
   expert: {
     title: "Do people reason like biology's AI models?",
-    sub: "Three games built on tasks that leading BioAI models are trained or benchmarked on: nanopore basecalling, zero-shot variant effect prediction and masked residue prediction. Players are trained in-game, then scored on the identical items the models were. Contributed sessions are profiled by agreement with each model (Cohen's κ) and answer tendencies, then clustered to ask whether human strategies converge, and onto which model.",
+    sub: "Four games built on tasks that leading BioAI models are trained or benchmarked on: nanopore basecalling, zero-shot variant effect prediction, masked residue prediction and protein-protein interface discrimination. Players are trained in-game, then scored on the identical items the models were. Contributed sessions are profiled by agreement with each model (Cohen's κ) and answer tendencies, then clustered to ask whether human strategies converge, and onto which model.",
     cta: 'Explore the data',
   },
 };
@@ -36,6 +36,12 @@ const GAMES: { key: string; title: string; url: string; tasks: GameKey[]; what: 
     what: { learner: 'Change one amino acid and a protein might keep working, or break. AI can predict which without running an experiment, but even the best AI can make mistakes! Learn the clues, then make the call.',
       expert: 'Damaging or tolerated? Single substitutions from 10 ProteinGym deep mutational scans, judged from the MSA, the AlphaFold2 structure and residue chemistry.' },
     ai: { learner: '15 models, from a simple lookup table to the best AI today', expert: '11 zero-shot predictors (EVmutation and EVE to ESM-1v, SaProt, ProSST, S3F and VenusREM) and 4 baselines' },
+  },
+  {
+    key: 'binders', title: 'Binders by eye', url: `${SITE}/Binders_by_eye/`, tasks: ['binders'],
+    what: { learner: 'Proteins work by sticking to each other, and the two surfaces have to fit like a handshake. You get two chains touching: decide whether they really belong together or whether the join has been scrambled.',
+      expert: 'Real or decoy interface? Two-chain PDB complexes released after Boltz-2\'s training cutoff, against the same pose with 50% of interface positions randomised and all side chains repacked.' },
+    ai: { learner: 'the AI that predicts protein complexes, plus models that only score the structure', expert: 'Boltz-2 ipTM (sequence only), ProteinMPNN, ESM2 and interface-feature baselines' },
   },
   {
     key: 'protseq', title: 'Protein sequence by eye', url: `${SITE}/Protein_sequence_by_eye/`, tasks: ['seq', 'struct'],

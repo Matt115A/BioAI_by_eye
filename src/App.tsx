@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Explore } from './components/Explore';
 import { Certificate } from './components/Certificate';
 import { Progress } from './components/Progress';
+import { Educators } from './components/Educators';
 import { useMyResults } from './lib/mine';
 import { fetchSubmissions } from './lib/backend';
 import { BACKEND_READY, SITE } from './lib/config';
@@ -71,6 +72,11 @@ export default function App() {
     if (!BACKEND_READY) return;
     for (const t of TASKS) fetchSubmissions(t.key).then((s) => setCounts((c) => ({ ...c, [t.key]: s.length }))).catch(() => setCounts((c) => ({ ...c, [t.key]: null })));
   }, []);
+  const [educators, setEducators] = useState(() => location.hash === '#educators');
+  useEffect(() => {
+    const h = () => { const on = location.hash === '#educators'; setEducators((was) => { if (on !== was) window.scrollTo(0, 0); return on; }); };
+    window.addEventListener('hashchange', h); return () => window.removeEventListener('hashchange', h);
+  }, []);
   const hero = HERO[level];
   return (
     <LevelContext.Provider value={level}>
@@ -84,10 +90,11 @@ export default function App() {
           </div>
         </nav>
 
+        {educators ? <Educators /> : <>
         <header className="hero">
           <h1>{hero.title}</h1>
           <p className="hero-sub">{hero.sub}</p>
-          <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a><a className="btn" href="#blog">Read blog</a></div>
+          <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a><a className="btn" href="#blog">Read blog</a><a className="btn" href="#educators">For Educators</a></div>
         </header>
 
         <Progress played={played} results={mine} />
@@ -139,6 +146,7 @@ export default function App() {
           </div>
           <p className="note">Everyone can see the anonymous datapoints behind these charts.</p>
         </section>
+        </>}
         <footer className="note hub-foot">Source: <a href="https://github.com/Matt115A/BioAI_by_eye">github.com/Matt115A/BioAI_by_eye</a></footer>
       </div>
     </LevelContext.Provider>

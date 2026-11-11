@@ -24,6 +24,12 @@ const HERO: Record<Level, { title: string; sub: string; cta: string }> = {
   },
 };
 
+const BLOGS = [
+  { title: 'Reading DNA blog', game: 'Reading DNA by eye', url: 'https://substack.com/@mattpenner/note/p-218656615?r=4nmn57&utm_source=notes-share-action&utm_medium=web' },
+  { title: 'Mutation prediction blog', game: 'Mutation effects by eye', url: 'https://substack.com/@mattpenner/note/p-218755987?r=4nmn57&utm_source=notes-share-action&utm_medium=web' },
+  { title: 'Binder prediction blog', game: 'Binders by eye', url: 'https://substack.com/@mattpenner/note/p-224368016?r=4nmn57&utm_source=notes-share-action&utm_medium=web' },
+];
+
 const GAMES: { key: string; title: string; url: string; tasks: GameKey[]; what: ByLevel; ai: ByLevel }[] = [
   {
     key: 'nanopore', title: 'Reading DNA by eye', url: `${SITE}/Nanopore_by_eye/`, tasks: ['nanopore'],
@@ -81,7 +87,7 @@ export default function App() {
         <header className="hero">
           <h1>{hero.title}</h1>
           <p className="hero-sub">{hero.sub}</p>
-          <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a></div>
+          <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a><a className="btn" href="#blog">Read blog</a></div>
         </header>
 
         <Progress played={played} results={mine} />
@@ -111,6 +117,14 @@ export default function App() {
           </div>
           <p className="muted explore-q">{TASKS.find((t) => t.key === game)!.question}{local ? ` · ${local} of your session${local === 1 ? '' : 's'} found in this browser` : ''}</p>
           <Explore game={game} counts={counts} playedAny={played.length > 0} />
+        </section>
+
+        <section id="blog" className="blog">
+          <h2>Read the blog</h2>
+          <p className="muted">The story behind each game: how the data was built and what the AI is really doing.</p>
+          <div className="blog-links">{BLOGS.map((b) => (
+            <a key={b.url} className="btn blog-btn" href={b.url} target="_blank" rel="noreferrer"><b>{b.title} →</b><span className="muted">{b.game}</span></a>
+          ))}</div>
         </section>
 
         <Certificate played={played} results={mine} />

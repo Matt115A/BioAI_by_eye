@@ -571,3 +571,10 @@ button.link { background: none; border: none; color: #f2c230; text-decoration: u
 .cert-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
 .cert-msg { font-size: 13px; }
 @media (max-width: 760px) { .cert-name { min-width: 0; width: 100%; } }
+
+.blog { margin: 56px 0 8px; scroll-margin-top: 20px; }
+.blog h2 { font-size: 28px; margin: 0 0 6px; }
+@media (max-width: 760px) { .blog h2 { font-size: 22px; } }
+.blog-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+.blog-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px 18px; text-decoration: none; color: var(--text); font-size: 15px; }
+.blog-btn .muted { font-size: 13px; font-weight: 400; }

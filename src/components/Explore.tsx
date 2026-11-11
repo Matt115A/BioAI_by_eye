@@ -16,7 +16,7 @@ const KIND_TEXT: Record<Level, Record<string, string>> = {
   expert: { simple: 'simple baseline', deep: 'deep learning', classic: 'classic MSA', sota: 'state of the art', msa: 'deep MSA', plm: 'protein language model', structure: 'structure-aware', window: 'ESM2 · window', full: 'ESM2 · full context', folding: 'complex folding' },
 };
 
-export function Explore({ game, counts, playedAny }: { game: GameKey; counts: Record<string, number | null>; playedAny: boolean }) {
+export function Explore({ game, playedAny }: { game: GameKey; counts: Record<string, number | null>; playedAny: boolean }) {
   const info = taskInfo(game);
   const level = useLevel(), L = level === 'learner';
   const scored = game === 'struct';   // partial credit for the right amino-acid family
@@ -66,7 +66,7 @@ export function Explore({ game, counts, playedAny }: { game: GameKey; counts: Re
       <div className="grid2">
         <Card title="The reasoning map" svgRef={refs.map} exportName={`${game}_reasoning_map`}
           sub={L ? 'People are placed by how they answer, not how well. Points close together make similar choices, so a person next to an AI model tends to think like it. Hover to identify a point.'
-            : "PCA of standardised reasoning profiles: Cohen's κ with each model plus answer-class tendencies. Models are projected into the same space from their calls on the pooled items."}>
+            : "PCA of standardised reasoning profiles: Cohen's κ with each model plus answer-class tendencies."}>
           <MapPlot svgRef={refs.map} you={ex.you?.xy ?? null} people={ex.persons.map((p) => ({ xy: p.xy, group: p.group, mine: p.mine }))} models={ex.models.map((m) => ({ name: m.name, label: m.label, kind: m.kind, xy: m.xy }))} />
         </Card>
         <Card title="Groups of people who reason alike" sub={!ex.groups.length ? `Groups appear once at least ${MIN_FOR_CLUSTERS} people have contributed.`
@@ -107,7 +107,6 @@ export function Explore({ game, counts, playedAny }: { game: GameKey; counts: Re
             ]} />}
         </Card>
       </div>
-      {!L && <p className="note">{counts[game] != null ? `${counts[game]} contributions stored for this task.` : ''} Profiles use only the trials where every answer was allowed. Data version {task.version}.</p>}
     </div>
   );
 }

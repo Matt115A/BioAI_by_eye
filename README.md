@@ -8,7 +8,11 @@ players against those models on identical items:
 - [Binders by eye](https://matt115a.github.io/Binders_by_eye/): real or scrambled protein-protein interfaces (vs Boltz-2, ProteinMPNN, ESM2)
 - [Protein sequence by eye](https://matt115a.github.io/Protein_sequence_by_eye/): masked residues from sequence (vs ESM2) or structure (vs ProteinMPNN)
 
-Players can **contribute a session anonymously** from each game's results page. The hub then shows, per task:
+Players can **contribute a session anonymously** from each game's results page. A datapoint needs 20 answers and is **cumulative**: every session a
+browser plays is appended to that game's datapoint, so playing again updates the same contribution instead of adding a
+second one, and withdrawing removes all of it. Because the database only allows insert and withdraw, an update inserts
+the merged row first and only then withdraws the row it replaces; if that withdrawal fails, the hub recognises a
+datapoint that is a prefix of another as the same person and keeps the longer. The hub then shows, per task:
 
 - how people and models stack up (everyone scored on the same items)
 - a map of reasoning profiles (agreement with each model + answer tendencies), with people, models and you

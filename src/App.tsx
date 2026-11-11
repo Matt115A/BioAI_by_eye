@@ -6,20 +6,20 @@ import { useMyResults } from './lib/mine';
 import { fetchSubmissions } from './lib/backend';
 import { BACKEND_READY, SITE } from './lib/config';
 import { initialLevel, type Level, LevelContext, saveLevel } from './lib/level';
-import { fromSession, localSessions } from './lib/submission';
+import { fromSession, localSessionCount, localSessions, pooledSubmissions } from './lib/submission';
 import { type GameKey, TASKS } from './lib/tasks';
 
 type ByLevel = { learner: string; expert: string };
 
 const HERO: Record<Level, { title: string; sub: string; cta: string }> = {
   learner: {
-    title: 'What can AI in biology do?',
-    sub: 'AI models now read DNA as it streams through a sensor, predict which mutations will break a protein, fill in missing pieces of proteins, and work out which proteins stick to each other. Each game teaches you one of these jobs in a few minutes, then puts you head to head with the real AI on exactly the same puzzles. No biology background needed: everything you need is taught in the game.',
+    title: 'How useful is AI in biotechnology?',
+    sub: 'AI models now read DNA as it streams through a sensor, predict which mutations will break a protein, build proteins from scratch, and figure out which proteins assemble together. Here, each game teaches you one of these jobs in bitesize chunks, and compares your performance against the real AI on exactly the same puzzles. No biology background needed (but it helps!): everything you need is taught in the game.',
     cta: 'See how people compare',
   },
   expert: {
-    title: "Do people reason like biology's AI models?",
-    sub: "Four games built on tasks that leading BioAI models are trained or benchmarked on: nanopore basecalling, zero-shot variant effect prediction, masked residue prediction and protein-protein interface discrimination. Players are trained in-game, then scored on the identical items the models were. Contributed sessions are profiled by agreement with each model (Cohen's κ) and answer tendencies, then clustered to ask whether human strategies converge, and onto which model.",
+    title: "Human-bench: train to beat biotechnology's AI models",
+    sub: "Here, we present four games built on tasks that leading BioAI models are trained or benchmarked on: nanopore basecalling, zero-shot variant effect prediction of proteins, masked protein residue prediction and protein-protein interface discrimination. Players are trained in-game, competing with the models to answer each question. Sessions are profiled by agreement with each model and answer tendencies, then clustered to ask whether human strategies converge, and onto which model. Build an intuitive sense of where BioAI excels, where it falls short, and how hard the challenges we face really are.",
     cta: 'Explore the data',
   },
 };
@@ -28,25 +28,25 @@ const GAMES: { key: string; title: string; url: string; tasks: GameKey[]; what: 
   {
     key: 'nanopore', title: 'Reading DNA by eye', url: `${SITE}/Nanopore_by_eye/`, tasks: ['nanopore'],
     what: { learner: 'DNA can be read by pulling it through a tiny pore and measuring the electric current. AI turns that wiggly signal into the letters A, C, G and T. Learn to read it yourself.',
-      expert: 'Call the base under a highlighted stretch of raw nanopore current, from real E. coli reads, including methylated DNA.' },
+      expert: 'Call the base under a highlighted stretch of raw nanopore current, from real E. coli reads, including methylated DNA. Easy to learn, hard to master.' },
     ai: { learner: 'the AI inside real nanopore sequencers, plus simpler models', expert: 'Dorado fast, hac and sup, a 1D CNN and three simple baselines' },
   },
   {
     key: 'mutations', title: 'Mutation effects by eye', url: `${SITE}/Mutations_by_eye/`, tasks: ['mutations'],
     what: { learner: 'Change one amino acid and a protein might keep working, or break. AI can predict which without running an experiment, but even the best AI can make mistakes! Learn the clues, then make the call.',
-      expert: 'Damaging or tolerated? Single substitutions from 10 ProteinGym deep mutational scans, judged from the MSA, the AlphaFold2 structure and residue chemistry.' },
+      expert: 'Damaging or tolerated? Single substitutions from 10 ProteinGym deep mutational scans, judged from the MSA, the AlphaFold2 structure and residue chemistry. Easy to learn, hard to master.' },
     ai: { learner: '15 models, from a simple lookup table to the best AI today', expert: '11 zero-shot predictors (EVmutation and EVE to ESM-1v, SaProt, ProSST, S3F and VenusREM) and 4 baselines' },
   },
   {
     key: 'binders', title: 'Binders by eye', url: `${SITE}/Binders_by_eye/`, tasks: ['binders'],
     what: { learner: 'Proteins work by sticking to each other, and the two surfaces have to fit like a handshake. You get two chains touching: decide whether they really belong together or whether the join has been scrambled.',
-      expert: 'Real or decoy interface? Two-chain PDB complexes released after Boltz-2\'s training cutoff, against the same pose with 50% of interface positions randomised and all side chains repacked.' },
-    ai: { learner: 'the AI that predicts protein complexes, plus models that only score the structure', expert: 'Boltz-2 ipTM (sequence only), ProteinMPNN, ESM2 and interface-feature baselines' },
+      expert: 'Real or decoy interface? Two-chain PDB complexes released after Boltz-2\'s training cutoff, against the same pose with 50% of interface positions randomised and all side chains repacked. Easy to learn, hard to master.' },
+    ai: { learner: 'the AI that predicts protein complexes, plus models that only score the structure', expert: 'Boltz-2, ProteinMPNN and heuristic baselines' },
   },
   {
     key: 'protseq', title: 'Protein sequence by eye', url: `${SITE}/Protein_sequence_by_eye/`, tasks: ['seq', 'struct'],
     what: { learner: "Protein language AIs learn by filling in a hidden amino acid, a bit like predictive text. Try it from the nearby sequence, or from the protein's 3D shape. Two games.",
-      expert: '20-way masked residue prediction, either from the 10 flanking residues or from the local backbone alone (no side chains, virtual Cβ).' },
+      expert: 'Masked residue prediction, either from the 10 flanking residues or from the local backbone alone. If you can do this, you are incredible.' },
     ai: { learner: 'ESM2 at four sizes, and ProteinMPNN', expert: 'ESM2 8M to 650M (window and full context) and ProteinMPNN' },
   },
 ];
@@ -56,9 +56,9 @@ export default function App() {
   const setLevel = (l: Level) => { setLevelState(l); saveLevel(l); };
   const [game, setGame] = useState<GameKey>('mutations');
   const [counts, setCounts] = useState<Record<string, number | null>>({});
-  const [local] = useState(() => localSessions().filter((s) => s?.trials?.length >= 20 && !s.meta?.simulated).length);
-  /** the tasks you've played in this browser (sessions with at least 20 answers), in hub order */
-  const [played] = useState<GameKey[]>(() => { const got = new Set(localSessions().map(fromSession).filter(Boolean).map((s) => s!.game)); return TASKS.map((t) => t.key).filter((k) => got.has(k)); });
+  const [local] = useState(localSessionCount);
+  /** the tasks you've played in this browser (sessions with at least 20 answers, or short ones that add up), in hub order */
+  const [played] = useState<GameKey[]>(() => { const got = new Set([...localSessions().map(fromSession), ...pooledSubmissions()].filter(Boolean).map((s) => s!.game)); return TASKS.map((t) => t.key).filter((k) => got.has(k)); });
   const mine = useMyResults(played);
   useEffect(() => { const h = (e: Event) => setGame((e as CustomEvent<GameKey>).detail); window.addEventListener('bioai:tab', h); return () => window.removeEventListener('bioai:tab', h); }, []);
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function App() {
                 <div className="game-num">0{i + 1}</div>
                 <div className="game-title">{g.title}</div>
                 <div className="game-what">{g.what[level]}</div>
-                <div className="game-ai"><span className="muted">You vs</span> {g.ai[level]}</div>
+                {level === 'expert' && <div className="game-ai"><span className="muted">You vs</span> {g.ai[level]}</div>}
                 <div className="game-foot">
                   <span className="muted">{known ? `${n} contribution${n === 1 ? '' : 's'}` : BACKEND_READY ? '…' : 'contributions opening soon'}</span>
                   <span className="game-play">Play →</span>
@@ -123,9 +123,9 @@ export default function App() {
             <div><b>What's not:</b> no name, email, account, IP address, device or browser details. The date is kept to the month.</div>
             <div><b>Changed your mind?</b> The results page has a <b>Withdraw</b> button that deletes your contribution.</div>
           </div>
-          <p className="note">A public science-communication project, not a clinical or formal research study. Everyone can see the anonymous datapoints behind these charts.</p>
+          <p className="note">Everyone can see the anonymous datapoints behind these charts.</p>
         </section>
-        <footer className="note hub-foot">Games: <a href={`${SITE}/Nanopore_by_eye/`}>Nanopore</a> · <a href={`${SITE}/Mutations_by_eye/`}>Mutations</a> · <a href={`${SITE}/Protein_sequence_by_eye/`}>Protein sequence</a> · Source: <a href="https://github.com/Matt115A/BioAI_by_eye">github.com/Matt115A/BioAI_by_eye</a></footer>
+        <footer className="note hub-foot">Source: <a href="https://github.com/Matt115A/BioAI_by_eye">github.com/Matt115A/BioAI_by_eye</a></footer>
       </div>
     </LevelContext.Provider>
   );

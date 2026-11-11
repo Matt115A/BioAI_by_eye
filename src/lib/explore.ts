@@ -1,4 +1,4 @@
-import { accuracy, clusterPeople, describeGroup, featureNames, humanAgreement, kappa, learningCurve, modelAccuracy, nearest, pca2, prepare, type Prepared, profile, profileOf, sameSubmission, standardize, testMask } from './analysis';
+import { accuracy, clusterPeople, describeGroup, extendsSubmission, featureNames, humanAgreement, kappa, learningCurve, modelAccuracy, nearest, pca2, prepare, type Prepared, profile, profileOf, samePerson, sameSubmission, standardize, testMask } from './analysis';
 import type { Submission } from './submission';
 import type { TaskData, TaskInfo } from './tasks';
 
@@ -6,9 +6,12 @@ export interface Person { prep: Prepared; acc: number; testAcc: number; group: n
 
 /** Everything the Explore view shows for one task, from contributions + your local sessions. */
 export function explore(task: TaskData, info: TaskInfo, contributions: Submission[], mine: Submission[]) {
+  // one row per contributor: a datapoint that another extends is the same person's, mid-replacement
+  const rows = contributions.filter((c) => !contributions.some((o) => extendsSubmission(o, c)));
   // your local sessions that were also uploaded count once (as a contributor, marked as you)
-  const subs = contributions.map((c) => ({ ...c, mine: mine.some((m) => sameSubmission(m, c)) }));
-  const localOnly = mine.filter((m) => !contributions.some((c) => sameSubmission(m, c)));
+  const subs = rows.map((c) => ({ ...c, mine: mine.some((m) => samePerson(m, c)) }));
+  // a local copy that is further along than the uploaded row still stands in for you, so "you" is never stale
+  const localOnly = mine.filter((m) => !rows.some((c) => sameSubmission(m, c)));
   const people = subs.map((s) => prepare(s, task, info)).filter((p): p is Prepared => !!p);
   const yours = localOnly.map((s) => prepare(s, task, info)).filter((p): p is Prepared => !!p);
   const X = people.map((p) => profile(p, task));
@@ -23,7 +26,7 @@ export function explore(task: TaskData, info: TaskInfo, contributions: Submissio
   let you: { acc: number; testAcc: number; group: number | null; xy: { x: number; y: number } | null; contributed: boolean; profile: number[]; n: number } | null = null;
   if (me) {
     const raw = profile(me, task), z = st ? st.z(raw) : null;
-    you = { acc: accuracy(me), testAcc: accuracy(me, testMask(me, info)), group: clusters && z ? nearest(z, clusters.centroids) : null, xy: pca && z ? pca.project(z) : null, contributed: persons.some((p) => p.mine && p.prep === me), profile: raw, n: me.correct.length };
+    you = { acc: accuracy(me), testAcc: accuracy(me, testMask(me, info)), group: clusters && z ? nearest(z, clusters.centroids) : null, xy: pca && z ? pca.project(z) : null, contributed: persons.some((p) => p.mine), profile: raw, n: me.correct.length };
   }
 
   // models, on exactly the items people answered: accuracy averaged person by person; a "profile" on the pooled items for the map

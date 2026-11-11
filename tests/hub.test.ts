@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { describe, expect, it } from 'vitest';
-import { clusterPeople, kappa, kmeans, prepare, profile, silhouette, standardize } from '../src/lib/analysis';
+import { clusterPeople, extendsSubmission, kappa, kmeans, prepare, profile, samePerson, silhouette, standardize } from '../src/lib/analysis';
 import { explore } from '../src/lib/explore';
 import { simulateContributors } from './mock';
 import { fromSession } from '../src/lib/submission';
@@ -58,6 +58,17 @@ describe('sessions → submissions', () => {
     const s = fromSession(mut)!;
     expect(s.game).toBe('mutations'); expect(s.responses).toMatch(/^[01]{30}$/); expect(s.phases).toBe('0'.repeat(20) + '1'.repeat(10)); expect(s.rt[0]).toBe(3460);
     expect(fromSession({ ...mut, meta: { ...mut.meta, simulated: true } })).toBeNull();
+
+    // a cumulative contribution replaces the row it grew from; if the old row is still there, it is the same person
+    const grown = { ...s, n: s.n + 4, items: [...s.items, ...[...t.truth.keys()].slice(30, 34)], responses: s.responses + '0101', phases: s.phases + '1111', rt: [...s.rt, 1000, 1000, 1000, 1000] };
+    expect(extendsSubmission(grown, s)).toBe(true);
+    expect(extendsSubmission(s, grown)).toBe(false);
+    expect(samePerson(grown, s)).toBe(true);
+    const mutInfo = taskInfo('mutations');
+    expect(explore(t, mutInfo, [s, grown], []).nPeople).toBe(1);       // not two contributors
+    expect(explore(t, mutInfo, [s, grown], []).persons[0].prep.sub.n).toBe(grown.n);   // and the fuller row is kept
+    // two people who merely answered the same items the same way are still two people
+    expect(explore(t, mutInfo, [s, { ...s }], []).nPeople).toBe(2);
     const nano = { meta: { app: 'nanopore-by-eye', app_version: '1', dataset_version: tasks.nanopore.version }, trials: [...tasks.nanopore.truth.keys()].slice(0, 25).map((id) => ({ window_id: id, pressed: 'C', phase: 'cg', rt_ms: 900 })) };
     expect(fromSession(nano)!.phases).toBe('3'.repeat(25));
     const seq = { meta: { app: 'masked-residue', app_version: '1', dataset_version: tasks.seq.version, config: { mode: 'struct' } }, trials: [...tasks.seq.truth.keys()].slice(0, 25).map((id) => ({ site_id: id, response: 'L', phase: 'learn', rt_ms: 900 })) };

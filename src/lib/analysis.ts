@@ -207,3 +207,11 @@ export function humanAgreement(preps: Prepared[]): { kappa: number; pairs: numbe
 
 /** Same submission twice (local copy + uploaded copy)? */
 export const sameSubmission = (a: Submission, b: Submission) => a.game === b.game && a.responses === b.responses && a.items.length === b.items.length && a.items.every((x, i) => x === b.items[i]);
+
+/** Does `a` open with the whole of `b`? A cumulative contribution is its own predecessor plus more sessions, so a
+ *  prefix pair is one person's datapoint caught mid-replacement (an insert whose withdrawal failed), not two people. */
+export const extendsSubmission = (a: Submission, b: Submission) =>
+  a.game === b.game && a.n > b.n && a.responses.startsWith(b.responses) && b.items.every((x, i) => x === a.items[i]);
+
+/** One contributor's datapoint, at whatever point in its growth. */
+export const samePerson = (a: Submission, b: Submission) => sameSubmission(a, b) || extendsSubmission(a, b) || extendsSubmission(b, a);

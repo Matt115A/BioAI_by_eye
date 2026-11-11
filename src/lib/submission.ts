@@ -1,3 +1,4 @@
+import { extendsSubmission } from './analysis';
 import { type GameKey, taskInfo } from './tasks';
 
 /** One anonymous datapoint: exactly what is uploaded (plus a withdrawal hash), nothing else. */
@@ -48,6 +49,41 @@ export function localSessions(): any[] {
   return out;
 }
 
+/** The games remember every session they play in `bioai.sessions`, so a player is one cumulative datapoint per game
+ *  and dataset version however many times they play (see shared/bioai.ts). This rebuilds that merge locally, which is
+ *  how your own sessions appear here whether or not you ever pressed Contribute. */
+type Logged = Record<string, { at: number; c: Submission }>;
+const MIN_ANSWERS = 20, MAX_ANSWERS = 1000;
+const merge = (cs: Submission[]): Submission => ({
+  ...cs[cs.length - 1], n: cs.reduce((a, x) => a + x.n, 0), items: cs.flatMap((x) => x.items), responses: cs.map((x) => x.responses).join(''),
+  phases: cs.map((x) => x.phases).join(''), rt: cs.flatMap((x) => x.rt),
+});
+
+export function pooledSubmissions(): Submission[] {
+  const read = <T,>(k: string): T | null => { try { return JSON.parse(localStorage.getItem(k) ?? 'null') as T; } catch { return null; } };
+  const logged: Logged = { ...(read<Logged>('bioai.pending') ?? {}), ...(read<Logged>('bioai.sessions') ?? {}) };
+  const groups = new Map<string, Submission[]>();
+  for (const [, e] of Object.entries(logged).sort((a, b) => a[1].at - b[1].at || a[0].localeCompare(b[0]))) {
+    if (!e?.c?.game) continue;
+    const k = `${e.c.game}|${e.c.dataset_version}`, g = groups.get(k) ?? [];
+    if (g.reduce((a, x) => a + x.n, 0) + e.c.n <= MAX_ANSWERS) g.push(e.c);   // only ever grows at the end
+    groups.set(k, g);
+  }
+  return [...groups.values()].filter((g) => g.reduce((a, x) => a + x.n, 0) >= MIN_ANSWERS).map(merge);
+}
+
 export function mySubmissions(game: GameKey): Submission[] {
-  return localSessions().map(fromSession).filter((x): x is Submission => !!x && x.game === game).map((x) => ({ ...x, mine: true }));
+  const mine = [...localSessions().map(fromSession), ...pooledSubmissions()].filter((x): x is Submission => !!x && x.game === game);
+  // a cumulative datapoint contains its own earlier versions, so keep only the longest of any prefix chain
+  return mine.filter((x) => !mine.some((y) => y !== x && extendsSubmission(y, x))).map((x) => ({ ...x, mine: true }));
+}
+
+/** How many of your own sessions this browser holds, across every game (deduped by id: a session can be both
+ *  archived by its game and remembered for contribution). */
+export function localSessionCount(): number {
+  const read = <T,>(k: string): T | null => { try { return JSON.parse(localStorage.getItem(k) ?? 'null') as T; } catch { return null; } };
+  const ids = new Set<string>();
+  for (const s of localSessions()) if (s?.meta?.session_id && !s.meta.simulated && s.trials?.length) ids.add(s.meta.session_id);
+  for (const k of [...Object.keys(read<object>('bioai.pending') ?? {}), ...Object.keys(read<object>('bioai.sessions') ?? {})]) ids.add(k);
+  return ids.size;
 }

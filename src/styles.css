@@ -629,3 +629,5 @@ button.link { background: none; border: none; color: #f2c230; text-decoration: u
   .edu a { color: #111 !important; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+.pt-chance { font-size: 12px; font-weight: 500; color: var(--muted, #8a8980); letter-spacing: 0; }

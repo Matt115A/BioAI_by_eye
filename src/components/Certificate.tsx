@@ -27,7 +27,7 @@ function CertSvg({ rs, name, svgRef }: { rs: MyResult[]; name: string; svgRef: R
       <text x={60} y={190} fill="#c3c2b7" fontSize={24}>{one ? <>took on the AI at <tspan fill="#f4f4f0" fontWeight={650}>{TITLE[one.key]}</tspan></> : <>took on biology's AI models in {rs.length} game{rs.length === 1 ? '' : 's'}</>}</text>
       {one ? (
         <g>
-          <Stat x={60} y={260} big={pct(one.acc)} label={`score · ${one.n.toLocaleString()} questions`} accent />
+          <Stat x={60} y={260} big={pct(one.acc)} label={`score · ${one.n.toLocaleString()} questions`} note={`random guessing scores ${pct(one.chance)}`} accent />
           <Stat x={400} y={260} big={`${one.pubBeat} of ${one.pubOf}`} label="AI models beaten" note="published models only" />
           <g transform="translate(810 260)">
             <text y={30} fill="#8a8980" fontSize={20} letterSpacing={2}>THINKS MOST LIKE</text>
@@ -47,6 +47,7 @@ function CertSvg({ rs, name, svgRef }: { rs: MyResult[]; name: string; svgRef: R
               <text y={0} fill="#f4f4f0" fontSize={27} fontWeight={650}>{SHORT[r.key]}</text>
               <text y={0} x={250} fill="#8a8980" fontSize={19}>{r.n} questions</text>
               <text x={430} y={0} fill={Y} fontSize={30} fontWeight={750}>{pct(r.acc)}</text>
+              <text x={430} y={21} fill="#8a8980" fontSize={15}>chance {pct(r.chance)}</text>
               <text x={560} y={0} fill="#f4f4f0" fontSize={27} fontWeight={650}>{r.pubBeat} of {r.pubOf}</text>
               <text x={730} y={0} fill="#f4f4f0" fontSize={fit(r.mostLike?.label ?? '–', 350, 26)} fontWeight={650}>{r.mostLike?.label ?? '–'}</text>
             </g>

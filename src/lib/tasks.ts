@@ -68,6 +68,13 @@ export const TASKS: TaskInfo[] = [
     question: 'Which amino acid fits this spot in the 3D structure? (like ProteinMPNN)', answer: 'amino acid',
     phases: ['learn', 'new'], openPhases: ['learn', 'new'], testPhases: ['new'], responseName: (c) => c },
 ];
+/** Expected score from picking an answer uniformly at random on every item (the chance line). */
+export function chanceScore(t: TaskData): number {
+  const alpha = [...t.alphabet];
+  let sum = 0, n = 0;
+  for (const truth of t.truth.values()) { sum += alpha.reduce((a, r) => a + t.score(r, truth), 0) / alpha.length; n++; }
+  return n ? sum / n : NaN;
+}
 export const taskInfo = (k: GameKey) => TASKS.find((t) => t.key === k)!;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

@@ -31,7 +31,7 @@ export function Progress({ played, results }: { played: GameKey[]; results: Part
               {!has ? <div className="pt-sub">Not played yet · <b>Play →</b></div>
                 : !r ? <div className="pt-sub">{r === null ? 'Couldn\'t load the comparison' : 'Scoring…'}</div>
                 : <>
-                  <div className="pt-score">{pct(r.acc)}</div>
+                  <div className="pt-score">{pct(r.acc)} <span className="pt-chance">chance {pct(r.chance)}</span></div>
                   <div className="pt-bar" title={`beat ${r.beat} of ${r.of}`}><span style={{ width: `${(r.beat / Math.max(1, r.of)) * 100}%` }} /></div>
                   <div className="pt-sub">beat {r.beat} of {r.of}{r.best ? <>, including <b>{r.best}</b></> : ''}</div>
                 </>}

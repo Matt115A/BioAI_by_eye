@@ -39,8 +39,8 @@ const personTip = (group: number | null, mine: boolean, acc?: number) => (
 );
 
 /** Each contributor is a dot (coloured by reasoning group); AI models are diamonds; you are the star. Labels appear on hover. */
-export function StripPlot({ people, models, you, svgRef, domain }: {
-  people: { acc: number; group: number | null; mine: boolean }[]; models: { name: string; label: string; acc: number; kind: string }[]; you: number | null;
+export function StripPlot({ people, models, you, svgRef, domain, chance }: {
+  people: { acc: number; group: number | null; mine: boolean }[]; models: { name: string; label: string; acc: number; kind: string }[]; you: number | null; chance?: number;
   svgRef: React.RefObject<SVGSVGElement | null>; domain: [number, number];
 }) {
   const [wrap, width] = useWidth<HTMLDivElement>();
@@ -57,7 +57,7 @@ export function StripPlot({ people, models, you, svgRef, domain }: {
     rowEnds[row] = x;
     return { ...m, x, y: top + row * 15 };
   });
-  const laneY = top + Math.max(1, rowEnds.length) * 15 + 34, H = laneY + 34;
+  const laneY = top + Math.max(1, rowEnds.length) * 15 + 34, H = laneY + 50;
   const ticks = []; for (let t = Math.ceil(domain[0] * 10) / 10; t <= domain[1] + 1e-9; t += 0.1) ticks.push(Math.round(t * 10) / 10);
   // deterministic jitter so dots don't stack
   const jit = (i: number) => (((i * 2654435761) % 1000) / 1000 - 0.5) * 36;
@@ -67,6 +67,10 @@ export function StripPlot({ people, models, you, svgRef, domain }: {
     <div className="chart-wrap" ref={wrap} onMouseLeave={() => setHover(null)}>
       <svg ref={svgRef} width={width} height={H} fontFamily={FONT}>
         {ticks.map((t) => <g key={t}><line x1={X(t)} x2={X(t)} y1={18} y2={H - 6} stroke={C.grid} /><text x={X(t)} y={12} textAnchor="middle" fill={C.muted} fontSize={11}>{pct(t)}</text></g>)}
+        {chance != null && Number.isFinite(chance) && <g className="chance-mark">
+          <line x1={X(chance)} x2={X(chance)} y1={18} y2={H - 18} stroke={C.text2} strokeWidth={1.5} strokeDasharray="5 4" />
+          <text x={X(chance)} y={H - 4} textAnchor={X(chance) < 70 ? 'start' : 'middle'} fill={C.text2} fontSize={11} fontWeight={600}>chance {pct(chance)}</text>
+        </g>}
         {people.map((p, i) => Number.isFinite(p.acc) && (
           <circle key={i} cx={X(p.acc)} cy={laneY + jit(i)} r={p.mine ? 6 : 4.5} fill={p.group == null ? '#8a8980' : GROUP_COLOR[p.group]} opacity={0.85} stroke={p.mine ? C.yellow : C.surface} strokeWidth={p.mine ? 2 : 1}
             onMouseEnter={() => show(`p${i}`, X(p.acc), laneY + jit(i), personTip(p.group, p.mine, p.acc))} onClick={() => toggle(`p${i}`, X(p.acc), laneY + jit(i), personTip(p.group, p.mine, p.acc))} />

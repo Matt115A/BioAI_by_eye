@@ -5,7 +5,7 @@ import { type Level, useLevel } from '../lib/level';
 import { explore } from '../lib/explore';
 import { MIN_FOR_CLUSTERS } from '../lib/analysis';
 import { mySubmissions, type Submission } from '../lib/submission';
-import { type GameKey, loadTask, STRUCT_CREDIT, type TaskData, taskInfo } from '../lib/tasks';
+import { chanceScore, type GameKey, loadTask, STRUCT_CREDIT, type TaskData, taskInfo } from '../lib/tasks';
 import { C, Card, Legend, LineChart } from './charts';
 import { GROUP_COLOR, groupName, MapPlot, MODEL_KIND_COLOR, ModelTip, RankBars, StripPlot } from './Plots';
 
@@ -41,7 +41,8 @@ export function Explore({ game, playedAny }: { game: GameKey; counts: Record<str
   const best = ex.models.reduce((b, m) => (m.acc > b.acc ? m : b), ex.models[0]);
   const accs = ex.persons.map((p) => p.acc).filter(Number.isFinite);
   const med = accs.length ? [...accs].sort((a, b) => a - b)[Math.floor(accs.length / 2)] : NaN;
-  const lo = Math.max(0, Math.floor(Math.min(...accs, ...ex.models.map((m) => m.acc).filter(Number.isFinite), ex.you?.acc ?? 1) * 10) / 10 - 0.05);
+  const chance = chanceScore(task);
+  const lo = Math.max(0, Math.floor(Math.min(...accs, chance, ...ex.models.map((m) => m.acc).filter(Number.isFinite), ex.you?.acc ?? 1) * 10) / 10 - 0.05);
   const kinds = [...new Set(ex.models.map((m) => m.kind))];
   return (
     <div className="explore">
@@ -52,15 +53,15 @@ export function Explore({ game, playedAny }: { game: GameKey; counts: Record<str
       </div>
       <div className="kpis">
         <div className="kpi"><div className="kpi-label">Contributors</div><div className="kpi-value">{ex.nPeople}</div><div className="kpi-sub">{ex.nTrials.toLocaleString()} answers</div></div>
-        <div className="kpi"><div className="kpi-label">Typical human</div><div className="kpi-value">{pct(med)}</div><div className="kpi-sub">median {scored ? 'score' : 'accuracy'}</div></div>
+        <div className="kpi"><div className="kpi-label">Typical human</div><div className="kpi-value">{pct(med)}</div><div className="kpi-sub">median {scored ? 'score' : 'accuracy'} · chance is {pct(chance)}</div></div>
         <div className="kpi"><div className="kpi-label">Best AI on the same items</div><div className="kpi-value">{pct(best?.acc)}</div><div className="kpi-sub">{best?.label}</div></div>
         <div className="kpi you"><div className="kpi-label">You</div><div className="kpi-value">{ex.you ? pct(ex.you.acc) : '–'}</div><div className="kpi-sub">{ex.you ? (ex.you.group != null ? `reasons like ${groupName(ex.you.group)}` : 'your latest session') : (playedAny ? <>You haven't played {GAME_NAME[game]} yet. <a href={info.url}>Play it →</a></> : <a href="#games">Pick a game to see where you land →</a>)}</div></div>
       </div>
 
       <Card title="How people and AI stack up" svgRef={refs.strip} exportName={`${game}_stack_up`}
-        sub={<>{L ? 'Each dot is one person\'s score. Diamonds are AI models, tested on exactly the same puzzles.' : 'Each dot is one contributor\'s accuracy over all answers, coloured by reasoning group. Diamonds are models scored on the identical items, averaged person by person.'}{ex.you ? ' The star is you.' : ''}{scoreNote} {L ? 'Hover over a point to see who or what it is.' : 'Hover for details and citations.'}</>}>
+        sub={<>{L ? 'Each dot is one person\'s score. Diamonds are AI models, tested on exactly the same puzzles.' : 'Each dot is one contributor\'s accuracy over all answers, coloured by reasoning group. Diamonds are models scored on the identical items, averaged person by person.'}{ex.you ? ' The star is you.' : ''} {L ? `The dashed line is chance: guessing at random scores about ${pct(chance)}.` : `Dashed line: chance, the expected score of uniform random guessing (${pct(chance)}).`}{scoreNote} {L ? 'Hover over a point to see who or what it is.' : 'Hover for details and citations.'}</>}>
         <Legend items={[...ex.groups.map((g) => ({ name: groupName(g.index), color: GROUP_COLOR[g.index] })), ...kinds.map((k) => ({ name: KIND_TEXT[level][k] ?? k, color: MODEL_KIND_COLOR[k] ?? C.text2, square: true }))]} />
-        <StripPlot svgRef={refs.strip} domain={[lo, 1]} you={ex.you?.acc ?? null} people={ex.persons.map((p) => ({ acc: p.acc, group: p.group, mine: p.mine }))} models={ex.models.map((m) => ({ name: m.name, label: m.label, acc: m.acc, kind: m.kind }))} />
+        <StripPlot svgRef={refs.strip} domain={[lo, 1]} chance={chance} you={ex.you?.acc ?? null} people={ex.persons.map((p) => ({ acc: p.acc, group: p.group, mine: p.mine }))} models={ex.models.map((m) => ({ name: m.name, label: m.label, acc: m.acc, kind: m.kind }))} />
       </Card>
 
       <div className="grid2">

@@ -82,7 +82,7 @@ export default function App() {
     <LevelContext.Provider value={level}>
       <div className="hub">
         <nav className="topbar">
-          <span className="brand">BioAI by eye</span>
+          <a className="brand" href="#" aria-label="BioAI by eye, home"><img className="brand-mark" src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />BioAI by eye</a>
           <div className="level-toggle" role="radiogroup" aria-label="Explanation level">
             {(['learner', 'expert'] as const).map((l) => (
               <button key={l} role="radio" aria-checked={level === l} className={level === l ? 'on' : ''} onClick={() => setLevel(l)}>{l === 'learner' ? 'Learner' : 'Expert'}</button>
@@ -92,6 +92,7 @@ export default function App() {
 
         {educators ? <Educators /> : <>
         <header className="hero">
+          <img className="hero-mark" src={`${import.meta.env.BASE_URL}logo.svg`} alt="" aria-hidden="true" />
           <h1>{hero.title}</h1>
           <p className="hero-sub">{hero.sub}</p>
           <div className="hero-cta"><a className="btn btn-primary" href="#games">Pick a game</a><a className="btn" href="#explore">{hero.cta}</a><a className="btn" href="#blog">Read blog</a><a className="btn" href="#educators">For Educators</a></div>

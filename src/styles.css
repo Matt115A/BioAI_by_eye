@@ -631,3 +631,13 @@ button.link { background: none; border: none; color: #f2c230; text-decoration: u
 }
 
 .pt-chance { font-size: 12px; font-weight: 500; color: var(--muted, #8a8980); letter-spacing: 0; }
+
+/* logo: small mark in the top bar; the tall eye-and-helix mark beside the hero on wide screens */
+.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; }
+.brand-mark { width: 26px; height: 26px; display: block; }
+.hero { position: relative; }
+.hero-mark { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: min(300px, 100%); width: auto; opacity: .95; pointer-events: none; }
+.hero h1, .hero-sub { position: relative; }
+@media (min-width: 1101px) { .hero { padding-right: 230px; } }
+@media (max-width: 1100px) { .hero-mark { display: none; } }
+@media print { .hero-mark { display: none; } }

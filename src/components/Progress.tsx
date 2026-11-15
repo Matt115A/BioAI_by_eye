@@ -39,7 +39,6 @@ export function Progress({ played, results }: { played: GameKey[]; results: Part
           );
         })}
       </div>
-      <p className="note progress-note">From the sessions saved in this browser (your latest per game), scored on exactly the items you answered. Nothing here is uploaded.</p>
     </section>
   );
 }

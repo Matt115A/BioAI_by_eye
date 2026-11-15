@@ -20,7 +20,7 @@ function CertSvg({ rs, name, svgRef }: { rs: MyResult[]; name: string; svgRef: R
     <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} width="100%" xmlns="http://www.w3.org/2000/svg" fontFamily={FONT} role="img" aria-label="Your BioAI by eye certificate">
       <rect width={W} height={H} rx={28} fill="#0e0e0d" />
       <rect x={18} y={18} width={W - 36} height={H - 36} rx={20} fill="none" stroke={Y} strokeOpacity={0.55} strokeWidth={2} />
-      <path d={`M${W - 262} ${H - 92} L${W - 212} ${H - 92} L${W - 200} ${H - 140} L${W - 176} ${H - 140} L${W - 164} ${H - 70} L${W - 136} ${H - 70} L${W - 128} ${H - 120} L${W - 100} ${H - 120} L${W - 90} ${H - 96} L${W - 60} ${H - 96}`} fill="none" stroke={Y} strokeOpacity={0.22} strokeWidth={5} strokeLinejoin="round" />
+      {one && <path d={`M${W - 262} ${H - 92} L${W - 212} ${H - 92} L${W - 200} ${H - 140} L${W - 176} ${H - 140} L${W - 164} ${H - 70} L${W - 136} ${H - 70} L${W - 128} ${H - 120} L${W - 100} ${H - 120} L${W - 90} ${H - 96} L${W - 60} ${H - 96}`} fill="none" stroke={Y} strokeOpacity={0.22} strokeWidth={5} strokeLinejoin="round" />}
       <text x={60} y={84} fill={Y} fontSize={20} fontWeight={700} letterSpacing={5}>BIOAI BY EYE · CERTIFICATE</text>
       <text x={W - 60} y={84} fill="#8a8980" fontSize={20} textAnchor="end">{month}</text>
       <text x={60} y={148} fill="#f4f4f0" fontSize={fit(who, 1080, 52)} fontWeight={750}>{who}</text>
@@ -37,21 +37,24 @@ function CertSvg({ rs, name, svgRef }: { rs: MyResult[]; name: string; svgRef: R
         </g>
       ) : (
         <g transform="translate(60 236)">
+          {/* one line per game, evenly spaced, with chance beside the score */}
           <text y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>GAME</text>
-          <text x={430} y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>SCORE</text>
-          <text x={560} y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>AI BEATEN</text>
-          <text x={730} y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>THINKS MOST LIKE</text>
-          {rs.map((r, i) => (
-            <g key={r.key} transform={`translate(0 ${58 + i * 62})`}>
-              <line x1={0} x2={W - 120} y1={-38} y2={-38} stroke="#2c2c29" />
-              <text y={0} fill="#f4f4f0" fontSize={27} fontWeight={650}>{SHORT[r.key]}</text>
-              <text y={0} x={250} fill="#8a8980" fontSize={19}>{r.n} questions</text>
-              <text x={430} y={0} fill={Y} fontSize={30} fontWeight={750}>{pct(r.acc)}</text>
-              <text x={430} y={21} fill="#8a8980" fontSize={15}>chance {pct(r.chance)}</text>
-              <text x={560} y={0} fill="#f4f4f0" fontSize={27} fontWeight={650}>{r.pubBeat} of {r.pubOf}</text>
-              <text x={730} y={0} fill="#f4f4f0" fontSize={fit(r.mostLike?.label ?? '–', 350, 26)} fontWeight={650}>{r.mostLike?.label ?? '–'}</text>
-            </g>
-          ))}
+          <text x={330} y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>SCORE</text>
+          <text x={540} y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>AI BEATEN</text>
+          <text x={700} y={18} fill="#8a8980" fontSize={17} letterSpacing={2}>THINKS MOST LIKE</text>
+          {rs.map((r, i) => {
+            const rowH = Math.min(62, 260 / rs.length), label = r.mostLike?.label ?? '–';
+            return (
+              <g key={r.key} transform={`translate(0 ${62 + i * rowH})`}>
+                <line x1={0} x2={W - 120} y1={-rowH / 2 - 9} y2={-rowH / 2 - 9} stroke="#2c2c29" />
+                <text y={0} fill="#f4f4f0" fontSize={26} fontWeight={650}>{SHORT[r.key]}</text>
+                <text x={330} y={0} fill={Y} fontSize={28} fontWeight={750}>{pct(r.acc)}</text>
+                <text x={420} y={0} fill="#8a8980" fontSize={16}>chance {pct(r.chance)}</text>
+                <text x={540} y={0} fill="#f4f4f0" fontSize={26} fontWeight={650}>{r.pubBeat} of {r.pubOf}</text>
+                <text x={700} y={0} fill="#f4f4f0" fontSize={Math.min(26, fit(label, 360, 26))} fontWeight={650}>{label}</text>
+              </g>
+            );
+          })}
         </g>
       )}
       <text x={60} y={H - 52} fill="#c3c2b7" fontSize={21}>{one ? '' : `${total.toLocaleString()} questions answered · `}Can you beat biology's AI? <tspan fill={Y} fontWeight={650}>matt115a.github.io/BioAI_by_eye</tspan></text>

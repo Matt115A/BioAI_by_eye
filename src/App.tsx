@@ -145,7 +145,7 @@ export default function App() {
             <div><b>What's not:</b> no name, email, account, IP address, device or browser details. The date is kept to the month.</div>
             <div><b>Changed your mind?</b> The results page has a <b>Withdraw</b> button that deletes your contribution.</div>
           </div>
-          <p className="note">Everyone can see the anonymous datapoints behind these charts.</p>
+          <p className="note">Everyone can see the anonymous datapoints behind these charts. Separately, we count page visits with <a href="https://www.goatcounter.com" target="_blank" rel="noreferrer">GoatCounter</a>, which sets no cookies, doesn't store your IP address and keeps only anonymous totals (pages viewed, referring site, country, browser type).</p>
         </section>
         </>}
         <footer className="note hub-foot">Source: <a href="https://github.com/Matt115A/BioAI_by_eye">github.com/Matt115A/BioAI_by_eye</a></footer>
